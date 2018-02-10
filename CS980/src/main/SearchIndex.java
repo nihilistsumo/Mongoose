@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -33,6 +35,7 @@ public class SearchIndex
 	private  static String OUT_FILE ;
 	private  static int TOP_SEARCH;
 	private  static ArrayList<Data.Page> pagelist;
+	private static ArrayList<String>paraID ;
 	
 	public SearchIndex(String INDEX_DIR, String OUTPUT_DIR, String CBOR_OUTLINE_FILE, String OUT_FILE, int TOP_SEARCH)throws IOException
 	{
@@ -44,6 +47,7 @@ public class SearchIndex
 		is = createSearcher();
 		qp = createParser();
 		pagelist = getPageListFromPath(SearchIndex.CBOR_OUTLINE_FILE);
+		paraID = new ArrayList<String>();
 	}
 	private static IndexSearcher createSearcher()throws IOException
 	{
@@ -64,32 +68,25 @@ public class SearchIndex
 		TopDocs tds = is.search(q, n);
 		return tds;
 	}
-	private static void rankParas(Data.Page page, int n) throws IOException, ParseException 
+	private static void rankParas(String qString, String qID, int n) throws IOException, ParseException 
 	{
-		String qString = page.getPageName();
 		System.out.println("Query: " + qString);
 		TopDocs tds = searchIndex(qString,n);
 		ScoreDoc[] retDocs = tds.scoreDocs;
-		createRunFile(qString,tds,retDocs);
+		createRunFile(qID,tds,retDocs);
 	}
-	private static void rankParas(Data.Page page, Data.Section section, String parentId, int n) throws IOException, ParseException 
-	{
-		String qString = parentId+"/"+section.getHeadingId();
-		System.out.println("Query: " + qString);
-		String query = qString.replaceAll("\\W", " ");
-		TopDocs tds = searchIndex(query,n);
-		ScoreDoc[] retDocs = tds.scoreDocs;
-		createRunFile(qString,tds,retDocs);
-	}
-	private static void createRunFile(String query, TopDocs tds, ScoreDoc[] retDocs)throws IOException
+	
+	private static void createRunFile(String queryID, TopDocs tds, ScoreDoc[] retDocs)throws IOException
 	{
 		ArrayList<String> runStrings = new ArrayList<String>();
 		Document d;
 		String runFileString;
 		String outFilePath = OUTPUT_DIR+"/"+OUT_FILE;
+		
 		for (int i = 0; i < retDocs.length; i++) 
 		{
 			d = is.doc(retDocs[i].doc);
+			String pID = d.getField("paraid").stringValue();
 			System.out.println("Doc " + i);
 			System.out.println("Score " + tds.scoreDocs[i].score);
 			System.out.println(d.getField("paraid").stringValue());
@@ -97,8 +94,12 @@ public class SearchIndex
 			
 			/*runFile string format: $queryId Q0 $paragraphId $rank $score $name*/
 			
-			runFileString = query+" Q0 "+d.getField("paraid").stringValue()+" "+i+" "+tds.scoreDocs[i].score+" "+"shubham";
-			runStrings.add(runFileString);
+			runFileString = queryID+" Q0 "+pID+" "+i+" "+tds.scoreDocs[i].score+" "+"shubham";
+			if(!paraID.contains(pID))
+			{
+				paraID.add(pID);
+				runStrings.add(runFileString);
+			}
 		}
 		
 		FileWriter fw = new FileWriter(outFilePath, true);
@@ -121,13 +122,26 @@ public class SearchIndex
 		} 
 		return pageList;
 	}
+	private static String buildSectionQueryStr(Data.Page page, List<Data.Section> sectionPath) 
+	{
+        StringBuilder queryStr = new StringBuilder();
+        queryStr.append(page.getPageName());
+        for (Data.Section section: sectionPath)
+        {
+        	if(!section.getHeading().contains("/"))
+        		queryStr.append(" ").append(section.getHeading());
+        }
+        return queryStr.toString();
+    }
 	public  static void searchPages()
 	{
 		try
 		{
 			for(Data.Page page:pagelist)
 			{
-				rankParas(page, TOP_SEARCH);
+				String qString = page.getPageName();
+				String qID = page.getPageId();
+				rankParas(qString,qID, TOP_SEARCH);
 				System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
 			}
 		}
@@ -138,21 +152,18 @@ public class SearchIndex
 	}
 	public  static void searchSections()
 	{
-		String parentId = "";
 		try
 		{
 			for(Data.Page page:pagelist)
-			{
-				parentId = page.getPageId();
-				for(Data.Section secL1:page.getChildSections())
+			{	
+				for (List<Data.Section> sectionPath : page.flatSectionPaths()) 
 				{
-					rankParas(page, secL1, parentId, TOP_SEARCH);
-					parentId = parentId+"/"+secL1.getHeadingId();
-					for(Data.Section secL2:secL1.getChildSections())
-					{
-						rankParas(page, secL2, parentId, TOP_SEARCH);
-					}
-				}
+	                String qString = buildSectionQueryStr(page, sectionPath);
+	                String qID = Data.sectionPathId(page.getPageId(), sectionPath);
+	                rankParas(qString,qID, TOP_SEARCH);
+					System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
+	        
+	            }
 			}
 		} 
 		catch ( IOException | ParseException e) 
