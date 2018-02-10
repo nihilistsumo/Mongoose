@@ -1,5 +1,5 @@
 package main;
-//hi
+
 import java.io.IOException;
 
 public class ProjectMain 
@@ -51,11 +51,11 @@ public class ProjectMain
 				+ "in which the search can be done. Use option -p after -s to search the index for page queries and"
 				+ "use option -s after -s to search the index for section queries.");
 		System.out.println("When using the -b option:");
-		System.out.println("ProjectMain.jar -b $path to index directory$ $path to directory containing paragrapgh cbor file$");
+		System.out.println("java -jar $jar file$ -b $path to index directory$ $path to directory containing paragrapgh cbor file$");
 		System.out.println("When using -s option:");
-		System.out.println("ProjectMain.jar -s -p $path to index directory$ $path to output directory$"
-				+"$path to cbor outline file$ $name of paragragh run file$ $top how many results$");
-		System.out.println("ProjectMain.jar -s -s $path to index directory$ $path to output directory$"
-				+"$path to cbor outline file$ $name of section run file$ $top how many results$");
+		System.out.println("java -jar $jar file$ -s -p $path to index directory$ $path to output directory$"
+				+" "+"$path to cbor outline file$ $name of paragragh run file$ $top how many results$");
+		System.out.println("java -jar $jar file$ -s -s $path to index directory$ $path to output directory$"
+				+" "+"$path to cbor outline file$ $name of section run file$ $top how many results$");
 	}
 }
