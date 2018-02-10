@@ -4,8 +4,11 @@ Repository for CS 980 Data Science class at UNH
 ## To install and run this code:  
 1. Build the project using maven as: mvn clean install
 2. Download the TREC-CAR version 2.0 datasets from http://trec-car.cs.unh.edu/datareleases/ 
+    
     2.1. paragraphCorpus  (as corpus)
+    
     2.2. benchmarkY1train (as queries)
+    
 3. Create directories for storing the index and the outputs. 
 
 ## Instructions
