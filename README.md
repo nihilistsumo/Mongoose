@@ -2,7 +2,11 @@
 Repository for CS 980 Data Science class at UNH
 
 ## To install and run this code:  
-Build the project using maven as: mvn clean install
+1. Build the project using maven as: mvn clean install
+2. Download the TREC-CAR version 2.0 datasets from http://trec-car.cs.unh.edu/datareleases/ 
+    2.1. paragraphCorpus  (as corpus)
+    2.2. benchmarkY1train (as queries)
+3. Create directories for storing the index and the outputs. 
 
 ## Instructions
 There are two options with which you can run this software. Using option -b builds the index whereas using option -s searches the index. When using option -s, there are two modes in which the search can be done. Use option -p after -s to search the index for page queries and use option -s after -s to search the index for section queries.
