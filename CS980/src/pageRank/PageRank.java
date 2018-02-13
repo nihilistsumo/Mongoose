@@ -2,11 +2,19 @@ package pageRank;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+
 
 public class PageRank 
 {
-	private final double alpha = 0.3;
+	private final double alpha = 0.15;
 	Graph g;
 	Set<Node> nodeSet;
 	
@@ -20,6 +28,13 @@ public class PageRank
 	{
 		for(Node node : nodeSet)
 			node.setCurrentScore(node.getNewScore());
+	}
+	private boolean isConverged()
+	{
+		for(Node n : nodeSet)
+			if(Math.abs(n.getCurrentScore()-n.getNewScore())>0.000000001)
+				return false;
+		return true;
 	}
 	public void calculate()throws IOException
 	{
@@ -39,7 +54,7 @@ public class PageRank
 		for (Node node : nodeSet)
 			node.setNewScore(initialRank);
 		
-		while(i<=200)
+		while(!isConverged())
 		{
 			updateScore();
 			for(Node node1 : nodeSet)
@@ -66,10 +81,8 @@ public class PageRank
 			}
 			i++;
 		}
-		System.out.println("converged after"+" "+i+" "+"iterations");
-		for(Node node : nodeSet)
-			System.out.println(node.getNodeId()+" "+node.getCurrentScore());
-		
+		System.out.println("Converged after"+" "+i+" "+"iterations");
+		sortScores();
 	}
 	public static void main(String args[])throws IOException
 	{
@@ -77,4 +90,44 @@ public class PageRank
 		PageRank p = new PageRank(file);
 		p.calculate();
 	}
+	private void sortScores()
+	{
+		Map<String,Double> scores = new LinkedHashMap<String,Double>();
+		Map<String, Double> sortedMap = new LinkedHashMap<String,Double>();
+		int j=1; double sum=0.0d;
+		
+		for(Node node : nodeSet)
+			sum += node.getCurrentScore();
+
+		for(Node node : nodeSet)
+			scores.put(node.getNodeId(), (node.getCurrentScore()/sum));
+			
+		List<Map.Entry<String, Double>> entries = new ArrayList<Map.Entry<String, Double>>((Collection<? extends Entry<String, Double>>) scores.entrySet());
+	    Collections.sort(entries,new CustomizedHashMap());
+	    
+	    for (Map.Entry<String, Double> entry : entries) 
+	    	sortedMap.put(entry.getKey(), entry.getValue());
+	    
+	    System.out.println("*******************Page Ranks********************");
+	    System.out.println("Rank\tPageID\t\tScore");
+	      
+	    for(String s: sortedMap.keySet())
+	    {
+	        System.out.println(j+"\t"+s+"\t\t"+sortedMap.get(s));
+	        j++;
+	        if(j>10 || j>g.getNumberOfNodes())
+	        	break;
+	    }
+	            	
+	}
+}
+class CustomizedHashMap implements Comparator<Map.Entry<String, Double>> 
+{
+
+	@Override
+	public int compare(Entry<String, Double> o1, Entry<String, Double> o2) 
+	{
+		return -o1.getValue().compareTo(o2.getValue());
+	}
+
 }
