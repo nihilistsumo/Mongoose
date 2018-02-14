@@ -2,11 +2,13 @@ package pageRank;
 
 import java.util.ArrayList;
 
-public class PageRank extends PageRankDriver
+public class PersonalisedPageRank extends PageRankDriver
 {
-	public PageRank(String filePath,double alpha)
+	ArrayList<String> seedSet;
+	public PersonalisedPageRank (String filePath,double alpha,ArrayList<String> seed)
 	{
 		super(filePath,alpha);
+		seedSet = new ArrayList<String>(seed);
 	}
 	public void calculate()
 	{
@@ -47,7 +49,10 @@ public class PageRank extends PageRankDriver
 						}
 					}
 				}
-				nodeScore =  (alpha/numOfNodes)  + ( (1-alpha) * nodeScore );
+				if(seedSet.contains(node1.getNodeId()))
+					nodeScore =  (alpha/seedSet.size())  + ( (1-alpha) * nodeScore );
+				else
+					nodeScore =  (1-alpha) * nodeScore;
 				node1.setNewScore(nodeScore);
 			}
 			i++;
@@ -56,3 +61,4 @@ public class PageRank extends PageRankDriver
 		sortScores();
 	}
 }
+
