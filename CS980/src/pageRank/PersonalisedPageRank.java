@@ -12,9 +12,6 @@ public class PersonalisedPageRank extends PageRankDriver
 	}
 	public void calculate()
 	{
-		double numOfNodes = g.getNumberOfNodes();
-		double numOfEdges = g.getNumberOfEdges();
-		double initialRank = 1/numOfNodes ;
 		System.out.println("Number of nodes ="+numOfNodes);
 		System.out.println("Number of edges ="+numOfEdges);
 		System.out.println("Initial rank of each node ="+initialRank);

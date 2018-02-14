@@ -15,6 +15,9 @@ import java.util.Map.Entry;
 	protected final double alpha;
 	protected Graph g;
 	protected Set<Node> nodeSet;
+	protected double numOfNodes;
+	protected double numOfEdges;
+	protected double initialRank ;
 	
 	public PageRankDriver(String filePath,double a)
 	{
@@ -22,6 +25,9 @@ import java.util.Map.Entry;
 		System.out.println(g);
 		nodeSet = g.getAllNodes();
 		alpha = a;
+		numOfNodes = g.getNumberOfNodes();
+		numOfEdges = g.getNumberOfEdges();
+		initialRank = 1/numOfNodes ;
 	}
 	protected void updateScore()
 	{
