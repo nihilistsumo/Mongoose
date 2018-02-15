@@ -11,12 +11,22 @@ Repository for CS 980 Data Science class at UNH
     
 3. Create directories for storing the index and the outputs. 
 
-## Instructions
-There are two options with which you can run this software. Using option -b builds the index whereas using option -s searches the index. When using option -s, there are two modes in which the search can be done. Use option -p after -s to search the index for page queries and use option -s after -s to search the index for section queries.
-### When using the -b option 
-java -jar $jar file$ -b $path to index directory$ $path to directory containing paragrapgh cbor file$ 
-### When using -s option
-java -jar $jar file$ -s -p $path to index directory$ $path to output directory$ $path to cbor outline file$ $name of paragragh run file$ $top how many results$ 
+## Usage Options
+-u: Display usage
+-b: Build Index");
+-sp: Search Index for Page queries
+-ss: Search Index for Section queries
+-pr: Run PageRank Algorithm on a Graph
+-ppr: Run PersonalisedPageRank Algorithm on a Graph
 
-java -jar $jar file$ -s -s $path to index directory$ $path to output directory$ $path to cbor outline file$ $name of section run file$ $top how many results$ 
+## Usage Syntax 
+java -jar $jar file$ -b $path to index directory$ $path to directory containing paragrapgh cbor file$
+
+java -jar $jar file$ -sp $path to index directory$ $path to output directory$" "$path to cbor outline file$ $name of paragragh run file$ $top how many results$
+
+java -jar $jar file$ -ss $path to index directory$ $path to output directory$" "$path to cbor outline file$ $name of section run file$ $top how many results$
+
+java -jar $jar file$ -pr $path to graph file$ $value of random jump (alpha)$
+
+java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $size of seed set$ $seed values$
 
