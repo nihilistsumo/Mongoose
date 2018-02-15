@@ -13,10 +13,15 @@ Repository for CS 980 Data Science class at UNH
 
 ## Usage Options
 -u: Display usage
--b: Build Index");
+
+-b: Build Index
+
 -sp: Search Index for Page queries
+
 -ss: Search Index for Section queries
+
 -pr: Run PageRank Algorithm on a Graph
+
 -ppr: Run PersonalisedPageRank Algorithm on a Graph
 
 ## Usage Syntax 
