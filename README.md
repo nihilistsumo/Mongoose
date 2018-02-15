@@ -35,3 +35,5 @@ java -jar $jar file$ -pr $path to graph file$ $value of random jump (alpha)$
 
 java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $size of seed set$ $seed values$
 
+NOTE: The graph file must be represented as an adjacency list. 
+
