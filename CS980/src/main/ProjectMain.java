@@ -48,9 +48,8 @@ public class ProjectMain
 			System.out.println("Doing PageRank...");
 			String cborParaFilePath = args[1];
 			String paraRunFilePath = args[2];
-			double alpha = Double.parseDouble(args[2]);
-			PageRank p = new PageRank(cborParaFilePath, paraRunFilePath, alpha);
-			p.calculate();
+			double alpha = Double.parseDouble(args[3]);
+			new carHypertextGraph.PageRank(cborParaFilePath, paraRunFilePath, alpha);
 		}
 		else if(args[0].equalsIgnoreCase("-ppr"))
 		{
