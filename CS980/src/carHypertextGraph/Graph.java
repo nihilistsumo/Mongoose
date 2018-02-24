@@ -21,6 +21,7 @@ public class Graph
 	private ArrayList<Edge> edges;
 	private ArrayList<Term> adjMatrix;
 	private HashMap<String, Data.Paragraph> paraToIDMap;
+	private HashMap<Integer,String> numToIdMap;
 	private HashMap<String,Integer> outlinks;
 	
 	public Graph(String cborParaFilePath, String paraRunFilePath)
@@ -29,10 +30,12 @@ public class Graph
 		edges = new ArrayList<Edge>();
 		adjMatrix = new ArrayList<Term>();
 		paraToIDMap = new HashMap<String, Data.Paragraph>();
+		numToIdMap = new HashMap<Integer,String>();
 		outlinks = new HashMap<String,Integer>();
 		makeParaToIDMap(cborParaFilePath);
 		getNodeSet(paraRunFilePath);
 		makeAdjacencySparseMatrix();
+		makeNumToIdMap();
 	}
 	public ArrayList<Node> getNodeSet()
 	{
@@ -103,6 +106,15 @@ public class Graph
 		}
 		return transition;
 	}
+	public String getNodeId(int number)
+	{
+		return numToIdMap.get(number);
+	}
+	private void makeNumToIdMap()
+	{
+		for(Node node : nodes)
+			numToIdMap.put(node.getNodeNumber(), node.getNodeId());
+	}
 	private void makeAdjacencySparseMatrix()
 	{
 		int count, u, v, num = 0;
@@ -116,14 +128,17 @@ public class Graph
 			count = 0;
 			u = node1.getNodeNumber();
 			para1 = paraToIDMap.get(node1.getNodeId());
+			System.out.println("para1="+para1);
 			list1 = para1.getEntitiesOnly();
 			for(Node node2 : nodes)
 			{
 				para2 = paraToIDMap.get(node2.getNodeId());
+				System.out.println("para2="+para2);
 				list2 = para2.getEntitiesOnly();
 				v = node2.getNodeNumber();
 				if(isCommon(list1,list2))
 				{
+					System.out.println("adding an edge");
 					t = new Term(u, v, 1);
 					e = new Edge(u,node1.getNodeId(),v,node2.getNodeId());
 					adjMatrix.add(t);
@@ -132,6 +147,7 @@ public class Graph
 					count++;
 				}
 			}
+			System.out.println("added"+" "+count+" "+"edges for"+" "+para1);
 			outlinks.put(node1.getNodeId(), count);
 		}
 		adjMatrix.add(0,new Term(nodes.size(), nodes.size(), num));
