@@ -1,6 +1,7 @@
 package carHypertextGraph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PageRank 
 {
@@ -9,6 +10,7 @@ public class PageRank
 	protected ArrayList<Node> nodeSet;
 	protected ArrayList<Term> adj;
 	protected ArrayList<Term> transition;
+	protected HashMap<String,Double> nodeScore; 
 	protected double numOfNodes;
 	protected double numOfEdges;
 	protected double initialRank ;
@@ -23,9 +25,11 @@ public class PageRank
 		numOfNodes = g.getNumberOfNodes();
 		numOfEdges = g.getNumberOfEdges();
 		initialRank = 1/numOfNodes ;
+		nodeScore = new HashMap<String,Double>();
+		calculate();
 	}
 	
-	public void calculate()
+	private void calculate()
 	{
 		ArrayList<Double> vector = new ArrayList<Double>();
 		ArrayList<Double> newVector = new ArrayList<Double>();
@@ -46,12 +50,24 @@ public class PageRank
 		}
 		while(!isConverged(vector,newVector));
 		
+		for(i = 0; i < vector.size(); i++)
+		{
+			String nodeId = g.getNodeId(i);
+			double score = vector.get(i);
+			nodeScore.put(nodeId, score);
+		}
+		for(String s : nodeScore.keySet())
+			System.out.println(s+" "+nodeScore.get(s));
+	}
+	public double getNodeScore(String id)
+	{
+		return nodeScore.get(id);
 	}
 	private boolean isConverged(ArrayList<Double> l1, ArrayList<Double> l2)
 	{
 		if(norm(l1,l2) > 0.00001)
-			return true;
-		return false;
+			return false;
+		return true;
 	}
 	private double norm(ArrayList<Double> l1, ArrayList<Double> l2)
 	{
