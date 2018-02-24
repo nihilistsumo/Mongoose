@@ -3,7 +3,8 @@ package main;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import pageRank.PageRank;
+import carHypertextGraph.MakeCARGraphFile;
+import carHypertextGraph.PageRank;
 import pageRank.PersonalisedPageRank;
 
 public class ProjectMain 
@@ -45,9 +46,10 @@ public class ProjectMain
 		else if(args[0].equalsIgnoreCase("-pr"))
 		{
 			System.out.println("Doing PageRank...");
-			String file = args[1];
+			String cborParaFilePath = args[1];
+			String paraRunFilePath = args[2];
 			double alpha = Double.parseDouble(args[2]);
-			PageRank p = new PageRank(file,alpha);
+			PageRank p = new PageRank(cborParaFilePath, paraRunFilePath, alpha);
 			p.calculate();
 		}
 		else if(args[0].equalsIgnoreCase("-ppr"))
@@ -62,6 +64,15 @@ public class ProjectMain
 				seed.add(args[c++]);
 			PersonalisedPageRank p = new PersonalisedPageRank(file,alpha,seed);
 			p.calculate();
+		}
+		else if(args[0].equalsIgnoreCase("-make"))
+		{
+			System.out.println("Making CAR Hypertext Graph File");
+			String cborFile = args[1];
+			String file = args[2];
+			String paraRunFile = args[3];
+			MakeCARGraphFile ob = new MakeCARGraphFile(cborFile,file,paraRunFile);
+			ob.makeGraphFile();
 		}
 		else
 		{
@@ -80,6 +91,7 @@ public class ProjectMain
 		System.out.println("-ss: Search Index for Section queries");
 		System.out.println("-pr: Run PageRank Algorithm on a Graph");
 		System.out.println("-ppr: Run PersonalisedPageRank Algorithm on a Graph");
+		System.out.println("-make: Make a CAR Hypertext Graph of paragraphs as nodes and entities as edges");
 		System.out.println();
 		System.out.println("************************************************************************************************************************************************************");
 		System.out.println("             										USAGE SYNTAX                   																			");
@@ -95,8 +107,10 @@ public class ProjectMain
 		System.out.println("java -jar $jar file$ -ss $path to index directory$ $path to output directory$"
 				+" "+"$path to cbor outline file$ $name of section run file$ $top how many results$");
 		
-		System.out.println("java -jar $jar file$ -pr $path to graph file$ $value of random jump (alpha)$");
+		System.out.println("java -jar $jar file$ -pr $path to paragraph corpus file$ $path to praragraph run file$ $value of random jump (alpha)$");
 		
 		System.out.println("java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $size of seed set$ $seed values$");
+		
+		System.out.println("java -jar $jar file$ -make $path to paragraph corpus cbor file$ $path to graph file$");
 	}
 }
