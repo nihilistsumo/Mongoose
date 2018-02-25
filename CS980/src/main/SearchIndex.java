@@ -22,6 +22,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
@@ -36,6 +37,7 @@ public class SearchIndex
 	private  static int TOP_SEARCH;
 	private  static ArrayList<Data.Page> pagelist;
 	private static ArrayList<String>paraID ;
+	static ArrayList<Document> documents;
 	
 	public SearchIndex(String INDEX_DIR, String OUTPUT_DIR, String CBOR_OUTLINE_FILE, String OUT_FILE, int TOP_SEARCH)throws IOException
 	{
@@ -48,6 +50,7 @@ public class SearchIndex
 		qp = createParser();
 		pagelist = getPageListFromPath(SearchIndex.CBOR_OUTLINE_FILE);
 		paraID = new ArrayList<String>();
+		documents = new ArrayList<Document>();
 	}
 	private static IndexSearcher createSearcher()throws IOException
 	{
@@ -86,6 +89,7 @@ public class SearchIndex
 		for (int i = 0; i < retDocs.length; i++) 
 		{
 			d = is.doc(retDocs[i].doc);
+			documents.add(d);
 			String pID = d.getField("paraid").stringValue();
 			System.out.println("Doc " + i);
 			System.out.println("Score " + tds.scoreDocs[i].score);
@@ -133,6 +137,10 @@ public class SearchIndex
         }
         return queryStr.toString();
     }
+	public static ArrayList<Document> getTopDocumentList()
+	{
+		return documents;
+	}
 	public  static void searchPages()
 	{
 		try
