@@ -1,8 +1,11 @@
 package carHypertextGraph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
+import org.apache.lucene.document.Document;
+import org.mapdb.*;
+
+import main.SearchIndex;
 public class PageRank 
 {
 	protected final double alpha;
@@ -10,14 +13,18 @@ public class PageRank
 	protected ArrayList<Node> nodeSet;
 	protected ArrayList<Term> adj;
 	protected ArrayList<Term> transition;
-	protected HashMap<String,Double> nodeScore; 
+	private ArrayList<Document> documents;
+	protected HTreeMap<String,Double> nodeScore; 
 	protected double numOfNodes;
 	protected double numOfEdges;
 	protected double initialRank ;
+	private DB db;
 	
-	public PageRank(String cborParaFilePath, String paraRunFilePath,double a)
+	public PageRank(double a)
 	{
-		g = new Graph(cborParaFilePath,paraRunFilePath);
+		documents = SearchIndex.getTopDocumentList();
+		g = new Graph(documents);
+		db = DBMaker.fileDB("pageRank.db").fileMmapEnable().transactionEnable().make();
 		nodeSet = g.getNodeSet();
 		adj = g.getAdjacencySparseMatrix();
 		transition = g.getTransitionSparseMatrix();
@@ -25,7 +32,7 @@ public class PageRank
 		numOfNodes = g.getNumberOfNodes();
 		numOfEdges = g.getNumberOfEdges();
 		initialRank = 1/numOfNodes ;
-		nodeScore = new HashMap<String,Double>();
+		nodeScore = db.hashMap("nodeScore", Serializer.STRING, Serializer.DOUBLE).counterEnable().create();
 		calculate();
 	}
 	
@@ -56,8 +63,8 @@ public class PageRank
 			double score = vector.get(i);
 			nodeScore.put(nodeId, score);
 		}
-		for(String s : nodeScore.keySet())
-			System.out.println(s+" "+nodeScore.get(s));
+		for(Object s : nodeScore.keySet())
+			System.out.println((String)s+" "+nodeScore.get(s));
 	}
 	public double getNodeScore(String id)
 	{
