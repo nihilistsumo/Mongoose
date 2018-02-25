@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
+import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 
 public class MongooseRunner {
 
@@ -35,8 +36,16 @@ public class MongooseRunner {
 							prop.getProperty("out-dir")+"/"+prop.getProperty("trec-runfile"))),
 							prop.getProperty("out-dir")+"/"+prop.getProperty("sim-data-out"));
 				}
+				else if(cmd.equalsIgnoreCase("l")){
+					RLibFileWriterForCluster rlib = new RLibFileWriterForCluster(mh);
+					rlib.processParaForRlib();
+					rlib.writeFeatureFile();
+				}
+				else if(cmd.equalsIgnoreCase("c")){
+					mh.runClustering(prop);
+				}
 			}
-		} catch (IOException | ParseException e) {
+		} catch (IOException | ParseException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

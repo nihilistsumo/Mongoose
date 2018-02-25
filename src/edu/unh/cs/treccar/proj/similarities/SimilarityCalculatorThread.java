@@ -30,7 +30,8 @@ public class SimilarityCalculatorThread implements Runnable{
 		ArrayList<Double> scores = new ArrayList<Double>();
 		int fCount = 0;
 		for(String f:funcs.split(" ")){
-			double simScore = 0.0, currScore = 0.0;
+			double simScore = 0.0;
+			Double currScore = 0.0;
 			int n = 0;
 			RelatednessCalculator rfunc = null;
 			switch(f){
@@ -62,6 +63,8 @@ public class SimilarityCalculatorThread implements Runnable{
 			for(String token1:pp.getPara1tokens()){
 				for(String token2:pp.getPara2tokens()){
 					currScore = rfunc.calcRelatednessOfWords(token1, token2);
+					if(currScore.isNaN() || currScore.isInfinite())
+						throw new RuntimeException();
 					if(currScore<SimilarityCalculator.MAX_SCORE){
 						simScore+=currScore;
 						n++;

@@ -16,36 +16,33 @@ public class CustomHAC {
 	public Properties prop;
 	public String pageID;
 	public int secNo;
-	ArrayList<Data.Paragraph> paraList;
+	ArrayList<String> paraIDList;
 	ArrayList<ParaPairData> ppds;
 	ArrayList<String> secids;
 	double[] wVec;
 	
-	public CustomHAC(Properties p, String pID, double[] w, ArrayList<SimilarityFunction> funcs, 
-			ArrayList<String> sectionIDs, ArrayList<Data.Paragraph> paras, ArrayList<ParaPairData> ppdList){
+	public CustomHAC(Properties p, String pID, double[] w, ArrayList<String> sectionIDs, ArrayList<String> paraIDs,
+			ArrayList<ParaPairData> ppdList){
 		this.prop = p;
 		this.pageID = pID;
 		this.secNo = sectionIDs.size();
-		this.paraList = paras;
+		this.paraIDList = paraIDs;
 		this.ppds = ppdList;
 		this.wVec = w;
 		this.secids = sectionIDs;
 	}
 
-	public HashMap<String, ArrayList<String>> cluster(){
-		
-		ArrayList<Data.Paragraph> paras = this.paraList;
+	public ArrayList<ArrayList<String>> cluster(){
 		ArrayList<ParaPairData> ppdList = this.ppds;
 		double[] optw = this.wVec;
-		ArrayList<String> secIDs = this.secids;
 		// Initialization //
 		HashMap<String, ArrayList<String>> clusters = new HashMap<String, ArrayList<String>>();
 		HashMap<HashSet<String>, ArrayList<Double>> clusterPairData = new HashMap<HashSet<String>, ArrayList<Double>>();
 		int noClusters = 0;
 		Integer clusterID = 1;
-		for(Data.Paragraph p:paras){
+		for(String p:this.paraIDList){
 			ArrayList<String> paraList = new ArrayList<String>();
-			paraList.add(p.getParaId());
+			paraList.add(p);
 			clusters.put("c"+clusterID, paraList);
 			clusterID++;
 		}
@@ -101,7 +98,11 @@ public class CustomHAC {
 				cxz.add(mergeC1);cxz.add(cid);
 				cyz.add(mergeC2);cyz.add(cid);
 				cxyz.add(mergedC); cxyz.add(cid);
-				clusterPairData.put(cxyz, this.avg(clusterPairData.get(cxz), clusterPairData.get(cyz)));
+				ArrayList<Double> simVec1 = clusterPairData.get(cxz);
+				ArrayList<Double> simVec2 = clusterPairData.get(cyz);
+				if(simVec1==null || simVec2==null)
+					System.out.println("Null in simvec");
+				clusterPairData.put(cxyz, this.avg(simVec1, simVec2));
 				clusterPairData.remove(cxz);
 				clusterPairData.remove(cyz);
 			}
@@ -117,8 +118,10 @@ public class CustomHAC {
 			
 			noClusters--;
 		}
-		
-		return clusters;
+		ArrayList<ArrayList<String>> listOfClusters = new ArrayList<ArrayList<String>>();
+		for(String c:clusters.keySet())
+			listOfClusters.add(clusters.get(c));
+		return listOfClusters;
 	}
 	
 	public ArrayList<Double> avg(ArrayList<Double> s1, ArrayList<Double> s2){

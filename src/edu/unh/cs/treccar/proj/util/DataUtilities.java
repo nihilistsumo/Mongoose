@@ -106,6 +106,24 @@ public class DataUtilities {
 	}
 	*/
 	
+	public static HashMap<String, ArrayList<String>> getArticleToplevelSecMap(String outlinePath){
+		HashMap<String, ArrayList<String>> articleSecMap = new HashMap<String, ArrayList<String>>();
+		try {
+			FileInputStream fis = new FileInputStream(new File(outlinePath));
+			final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis);
+			for(int i=0; pageIt.hasNext(); i++){
+				Data.Page page = pageIt.next();
+				ArrayList<String> secIDsInPage = new ArrayList<String>();
+				for(Data.Section sec:page.getChildSections())
+					secIDsInPage.add(page.getPageId()+"/"+sec.getHeadingId());
+				articleSecMap.put(page.getPageId(), secIDsInPage);
+			}
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		return articleSecMap;
+	}
+	
 	public static HashMap<String, ArrayList<String>> getArticleSecMap(String outlinePath){
 		HashMap<String, ArrayList<String>> articleSecMap = new HashMap<String, ArrayList<String>>();
 		try {
