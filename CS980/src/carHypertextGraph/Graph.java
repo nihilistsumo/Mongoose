@@ -1,42 +1,51 @@
 package carHypertextGraph;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import org.apache.lucene.document.Document;
+import org.mapdb.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-
-import edu.unh.cs.treccar_v2.Data;
-import edu.unh.cs.treccar_v2.read_data.CborFileTypeException;
-import edu.unh.cs.treccar_v2.read_data.CborRuntimeException;
-import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class Graph 
 {
-	private ArrayList<Node> nodes;
+	private DB db1,db2;
+	private  ArrayList<Node> nodes;
 	private ArrayList<Edge> edges;
 	private ArrayList<Term> adjMatrix;
-	private HashMap<String, Data.Paragraph> paraToIDMap;
-	private HashMap<Integer,String> numToIdMap;
-	private HashMap<String,Integer> outlinks;
+	private HTreeMap<Integer,String> numToIdMap;
+	private HTreeMap<String,Integer> outlinks;	
 	
-	public Graph(String cborParaFilePath, String paraRunFilePath)
+	public Graph(ArrayList<Document> documents)
 	{
+		db1 = DBMaker.fileDB("graph1.db").fileMmapEnable().transactionEnable().make();
+		db2 = DBMaker.fileDB("graph2.db").fileMmapEnable().transactionEnable().make();
 		nodes = new ArrayList<Node>();
 		edges = new ArrayList<Edge>();
 		adjMatrix = new ArrayList<Term>();
-		paraToIDMap = new HashMap<String, Data.Paragraph>();
-		numToIdMap = new HashMap<Integer,String>();
-		outlinks = new HashMap<String,Integer>();
-		makeParaToIDMap(cborParaFilePath);
-		getNodeSet(paraRunFilePath);
+		numToIdMap = db1.hashMap("num_to_id_map", Serializer.INTEGER, Serializer.STRING).counterEnable().create();
+		outlinks = db2.hashMap("outlinks", Serializer.STRING, Serializer.INTEGER).counterEnable().create();
+		makeNodeSet(documents);
 		makeAdjacencySparseMatrix();
 		makeNumToIdMap();
 	}
+	private  void makeNodeSet(ArrayList<Document> documents)
+	{
+		System.out.println("Adding a node to node set of graph");
+		String pID, entity;
+		int nodeNumber = 0;
+		String[] entityArray;
+		List<String> entityList;
+		
+		for(Document d : documents)
+		{
+			pID = d.getField("paraid").stringValue();
+			entity = d.getField("paraentity").stringValue();
+			entityArray = entity.split(" ");
+			entityList = Arrays.asList(entityArray);
+			nodes.add(new Node(pID, nodeNumber,entityList));
+			nodeNumber++;
+		}
+	}	
 	public ArrayList<Node> getNodeSet()
 	{
 		return this.nodes;
@@ -112,35 +121,40 @@ public class Graph
 	}
 	private void makeNumToIdMap()
 	{
+		System.out.println("making numToIDMap");
 		for(Node node : nodes)
+		{
+			System.out.println(node.getNodeNumber()+" "+node.getNodeId());
 			numToIdMap.put(node.getNodeNumber(), node.getNodeId());
+		}
 	}
 	private void makeAdjacencySparseMatrix()
 	{
 		int count, u, v, num = 0;
 		Term t; 
 		Edge e;
-		Data.Paragraph para1, para2;
+		String para1, para2;
 		List<String> list1, list2;
 		adjMatrix.add(new Term());
 		for(Node node1 : nodes)
 		{
 			count = 0;
 			u = node1.getNodeNumber();
-			para1 = paraToIDMap.get(node1.getNodeId());
+			para1 =  node1.getNodeId();
+			list1 = node1.getEntityList();
 			System.out.println("para1="+para1);
-			list1 = para1.getEntitiesOnly();
+		
 			for(Node node2 : nodes)
 			{
-				para2 = paraToIDMap.get(node2.getNodeId());
-				System.out.println("para2="+para2);
-				list2 = para2.getEntitiesOnly();
 				v = node2.getNodeNumber();
+				para2 =  node2.getNodeId();
+				list2 = node2.getEntityList();
+				System.out.println("para2="+para2);
 				if(isCommon(list1,list2))
 				{
 					System.out.println("adding an edge");
 					t = new Term(u, v, 1);
-					e = new Edge(u,node1.getNodeId(),v,node2.getNodeId());
+					e = new Edge(u,para1,v,para2);
 					adjMatrix.add(t);
 					edges.add(e);
 					num++;
@@ -165,52 +179,4 @@ public class Graph
 				}
 		return flag;
 	}
-	private void makeParaToIDMap(String cborParaFilePath)
-	{
-		try 
-		{
-			for(Data.Paragraph para : DeserializeData.iterableParagraphs(new FileInputStream(new File(cborParaFilePath))))
-				paraToIDMap.put(para.getParaId(),para);
-		} 
-		catch (CborRuntimeException e) 
-		{
-			e.printStackTrace();
-		} 
-		catch (CborFileTypeException e) 
-		{
-			e.printStackTrace();
-		} 
-		catch (FileNotFoundException e) 
-		{
-			e.printStackTrace();
-		}
-	}
-	private void getNodeSet(String paraRunFilePath)
-	{
-		BufferedReader br = null;
-		int num = 0;
-		try 
-		{
-			br = new BufferedReader(new FileReader(paraRunFilePath));
-			String line;
-			try 
-			{
-				while((line = br.readLine()) != null)
-				{
-					String s = line.split(" ")[2];
-					nodes.add(new Node(s,num));
-					num++;
-				}
-			} 
-			catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-		} 
-		catch (FileNotFoundException e) 
-		{
-			e.printStackTrace();
-		}
-	}
-	
 }
