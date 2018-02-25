@@ -3,6 +3,8 @@ package main;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -37,7 +39,12 @@ public class BuildIndex
 	private static Document createDocument(Data.Paragraph para)
 	{
 		Document paradoc = new Document();
+		List<String> entity = para.getEntitiesOnly();
+		String entityString = "";
+		for(String s : entity)
+			entityString += " "+s;
 		paradoc.add(new StringField("paraid", para.getParaId(), Field.Store.YES));
+		paradoc.add(new StringField("paraentity", entityString, Field.Store.YES));
 		paradoc.add(new TextField("parabody", para.getTextOnly(), Field.Store.YES));
 		System.out.println(para.getParaId());
 		return paradoc;
