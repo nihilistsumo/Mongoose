@@ -45,11 +45,11 @@ public class ProjectMain
 		}
 		else if(args[0].equalsIgnoreCase("-pr"))
 		{
-			System.out.println("Doing PageRank...");
-			String cborParaFilePath = args[1];
-			String paraRunFilePath = args[2];
-			double alpha = Double.parseDouble(args[3]);
-			new carHypertextGraph.PageRank(cborParaFilePath, paraRunFilePath, alpha);
+			System.out.println("PageRank Algorithm on CAR Graph of top paragraphs of each page as nodes");
+			System.out.println("Make sure to build the index first using -b option and "
+					+ "then search the index for page queries using -sp option. See usage for more details.");
+			double alpha = Double.parseDouble(args[1]);
+			new PageRank(alpha);
 		}
 		else if(args[0].equalsIgnoreCase("-ppr"))
 		{
@@ -106,7 +106,7 @@ public class ProjectMain
 		System.out.println("java -jar $jar file$ -ss $path to index directory$ $path to output directory$"
 				+" "+"$path to cbor outline file$ $name of section run file$ $top how many results$");
 		
-		System.out.println("java -jar $jar file$ -pr $path to paragraph corpus file$ $path to praragraph run file$ $value of random jump (alpha)$");
+		System.out.println("java -jar $jar file$ -pr  $value of random jump (alpha)$");
 		
 		System.out.println("java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $size of seed set$ $seed values$");
 		
