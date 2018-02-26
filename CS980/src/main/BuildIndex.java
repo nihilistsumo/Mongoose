@@ -20,6 +20,7 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class BuildIndex 
 {
+	
 	private  static String INDEX_DIR ;
 	private  static String CBOR_FILE ;
 	

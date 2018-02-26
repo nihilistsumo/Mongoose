@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CS980
 Repository for CS 980 Data Science class at UNH
 
@@ -37,3 +38,7 @@ java -jar $jar file$ -ppr $path to graph file$ $value of random jump (alpha)$ $s
 
 NOTE: The graph file must be represented as an adjacency list. 
 
+=======
+# Mongoose
+A class project for CS980
+>>>>>>> branch 'graph' of https://github.com/nihilistsumo/Mongoose.git

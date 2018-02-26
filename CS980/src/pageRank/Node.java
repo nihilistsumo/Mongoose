@@ -1,5 +1,6 @@
 package pageRank;
 
+
 public class Node 
 {
 	private String nodeID;

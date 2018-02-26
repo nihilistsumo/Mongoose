@@ -1,5 +1,6 @@
 package carHypertextGraph;
 
+
 public class Edge 
 {
 	private int sourceNum;

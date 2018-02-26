@@ -16,6 +16,7 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class FindParas 
 {
+	
 	private String filePath,outlineFilePath,cborParaFilePath;
 	private ArrayList<Data.Page> pageList = new ArrayList<Data.Page>();
 	private LinkedHashMap<String,ArrayList<String>> rankings = new LinkedHashMap<String,ArrayList<String>>();

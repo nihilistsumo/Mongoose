@@ -2,6 +2,7 @@ package pageRank;
 
 import java.util.ArrayList;
 
+
 public class PageRank extends PageRankDriver
 {
 	public PageRank(String filePath,double alpha)

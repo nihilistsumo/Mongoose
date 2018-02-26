@@ -1,5 +1,6 @@
 package carHypertextGraph;
 
+
 public class Term 
 {
 	private int column;

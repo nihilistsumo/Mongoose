@@ -9,6 +9,7 @@ import pageRank.PersonalisedPageRank;
 
 public class ProjectMain 
 {
+	
 	public static void main(String[] args)throws IOException
 	{
 		if(args[0].equalsIgnoreCase("-u"))
