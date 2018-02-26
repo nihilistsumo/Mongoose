@@ -29,6 +29,7 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class SearchIndex 
 {
+	
 	private static IndexSearcher is = null;
 	private static QueryParser qp = null;
 	private  static String INDEX_DIR ;
