@@ -1,9 +1,13 @@
 package carHypertextGraph;
 
-import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Document;
 import org.mapdb.*;
+
+//import main.SearchIndex;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class Graph 
@@ -13,9 +17,10 @@ public class Graph
 	private ArrayList<Edge> edges;
 	private ArrayList<Term> adjMatrix;
 	private HTreeMap<Integer,String> numToIdMap;
-	private HTreeMap<String,Integer> outlinks;	
+	private HashMap<String,Integer> outlinks;
+	private static int nodeNumber = 0;
 	
-	public Graph(ArrayList<Document> documents)
+	public Graph()
 	{
 		db1 = DBMaker.fileDB("graph1.db").fileMmapEnable().transactionEnable().make();
 		db2 = DBMaker.fileDB("graph2.db").fileMmapEnable().transactionEnable().make();
@@ -23,32 +28,24 @@ public class Graph
 		edges = new ArrayList<Edge>();
 		adjMatrix = new ArrayList<Term>();
 		numToIdMap = db1.hashMap("num_to_id_map", Serializer.INTEGER, Serializer.STRING).counterEnable().create();
-		outlinks = db2.hashMap("outlinks", Serializer.STRING, Serializer.INTEGER).counterEnable().create();
-		makeNodeSet(documents);
-		makeAdjacencySparseMatrix();
-		makeNumToIdMap();
+		outlinks = new HashMap<String,Integer>();
+		//makeAdjacencySparseMatrix();
+		//makeNumToIdMap();
 	}
-	private  void makeNodeSet(ArrayList<Document> documents)
+	public  void makeNodeSet(String pID, String entity)
 	{
 		System.out.println("Adding a node to node set of graph");
-		String pID, entity;
-		int nodeNumber = 0;
 		String[] entityArray;
 		List<String> entityList;
 		
-		for(Document d : documents)
-		{
-			pID = d.getField("paraid").stringValue();
-			entity = d.getField("paraentity").stringValue();
-			entityArray = entity.split(" ");
-			entityList = Arrays.asList(entityArray);
-			nodes.add(new Node(pID, nodeNumber,entityList));
-			nodeNumber++;
-		}
+		entityArray = entity.split(" ");
+		entityList = Arrays.asList(entityArray);
+		nodes.add(new Node(pID, nodeNumber,entityList));
+		nodeNumber++;
 	}	
 	public ArrayList<Node> getNodeSet()
 	{
-		return this.nodes;
+		return nodes;
 	}
 	public ArrayList<Edge> getEdgeSet()
 	{
@@ -60,7 +57,7 @@ public class Graph
 	}
 	public int getNumberOfNodes()
 	{
-		return this.nodes.size();
+		return nodes.size();
 	}
 	public int getNumberOfEdges()
 	{
@@ -103,13 +100,20 @@ public class Graph
 	public ArrayList<Term> getTransitionSparseMatrix()
 	{
 		int row, col;
-		double val;
+		double val =0;
 		 ArrayList<Term> transition = new ArrayList<Term>();
 		for(Term term : adjMatrix)
 		{
 			row = term.getRowIndex();
 			col = term.getColumnIndex();
-			val = 1.0 / getNumberOfOutlinks(getSourceNodeId(row));
+			if(outlinks.containsKey(numToIdMap.get(row)))
+				val = 1.0 / getNumberOfOutlinks(numToIdMap.get(row));
+			else
+			{
+				System.out.println("no key="+numToIdMap.get(row));
+				//System.exit(0);
+				val = 1.0 / nodes.size();
+			}
 			Term newTerm = new Term(row, col, val);
 			transition.add(newTerm);
 		}
@@ -119,7 +123,7 @@ public class Graph
 	{
 		return numToIdMap.get(number);
 	}
-	private void makeNumToIdMap()
+	public void makeNumToIdMap()
 	{
 		System.out.println("making numToIDMap");
 		for(Node node : nodes)
@@ -128,7 +132,7 @@ public class Graph
 			numToIdMap.put(node.getNodeNumber(), node.getNodeId());
 		}
 	}
-	private void makeAdjacencySparseMatrix()
+	public void makeAdjacencySparseMatrix()
 	{
 		int count, u, v, num = 0;
 		Term t; 
@@ -169,14 +173,9 @@ public class Graph
 	
 	private boolean isCommon(List<String> list1, List<String> list2)
 	{
-		boolean flag = false;
-		for(String s1 : list1)
-			for(String s2 : list2)
-				if(s1.equalsIgnoreCase(s2))
-				{
-					flag = true;
-					break;
-				}
-		return flag;
+		for(String s : list1)
+			if(list2.contains(s))
+				return true;
+		return false;
 	}
 }

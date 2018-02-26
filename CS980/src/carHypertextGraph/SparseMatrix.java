@@ -49,7 +49,7 @@ public class SparseMatrix
 		double d;
 		Term t;
 		int i;
-		for(i = 1; i <= list.size(); i++)
+		for(i = 1; i < list.size(); i++)
 		{
 			t = list.get(i);
 			d = t.getValue();
@@ -287,6 +287,7 @@ public class SparseMatrix
 				}
 			}
 			result.add(sum);
+			System.out.println("sum="+sum);
 			col++;
 		}
 		return result;

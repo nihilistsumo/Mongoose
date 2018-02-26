@@ -46,10 +46,15 @@ public class ProjectMain
 		else if(args[0].equalsIgnoreCase("-pr"))
 		{
 			System.out.println("PageRank Algorithm on CAR Graph of top paragraphs of each page as nodes");
-			System.out.println("Make sure to build the index first using -b option and "
-					+ "then search the index for page queries using -sp option. See usage for more details.");
-			double alpha = Double.parseDouble(args[1]);
-			new PageRank(alpha);
+			
+			String indexDir = args[1];
+			String outDir = args[2];
+			String cborOutline = args[3];
+			String outFile= args[4];
+			String outParaFile= args[5];
+			int top = Integer.parseInt(args[6]);
+			double alpha = Double.parseDouble(args[7]);
+			new PageRank(indexDir,outDir,cborOutline,outFile,outParaFile,top,alpha);
 		}
 		else if(args[0].equalsIgnoreCase("-ppr"))
 		{

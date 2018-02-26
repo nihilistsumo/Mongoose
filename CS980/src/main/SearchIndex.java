@@ -23,6 +23,7 @@ import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import carHypertextGraph.Graph;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
@@ -37,10 +38,12 @@ public class SearchIndex
 	private  static int TOP_SEARCH;
 	private  static ArrayList<Data.Page> pagelist;
 	private static ArrayList<String>paraID ;
-	static ArrayList<Document> documents;
+	public static ArrayList<Document> documents;
+	private static Graph g;
 	
 	public SearchIndex(String INDEX_DIR, String OUTPUT_DIR, String CBOR_OUTLINE_FILE, String OUT_FILE, int TOP_SEARCH)throws IOException
 	{
+		g = new Graph();
 		SearchIndex.INDEX_DIR = INDEX_DIR;
 		SearchIndex.OUTPUT_DIR = OUTPUT_DIR;
 		SearchIndex.CBOR_OUTLINE_FILE = CBOR_OUTLINE_FILE;
@@ -78,6 +81,10 @@ public class SearchIndex
 		ScoreDoc[] retDocs = tds.scoreDocs;
 		createRunFile(qID,tds,retDocs);
 	}
+	public static Graph getGraph()
+	{
+		return g;
+	}
 	
 	private static void createRunFile(String queryID, TopDocs tds, ScoreDoc[] retDocs)throws IOException
 	{
@@ -91,6 +98,8 @@ public class SearchIndex
 			d = is.doc(retDocs[i].doc);
 			documents.add(d);
 			String pID = d.getField("paraid").stringValue();
+			String entity = d.getField("paraentity").stringValue();
+			g.makeNodeSet(pID, entity);
 			System.out.println("Doc " + i);
 			System.out.println("Score " + tds.scoreDocs[i].score);
 			System.out.println(d.getField("paraid").stringValue());

@@ -1,11 +1,15 @@
 package carHypertextGraph;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Document;
 import org.mapdb.*;
 
 import main.SearchIndex;
+
+//import main.SearchIndex;
 public class PageRank 
 {
 	protected final double alpha;
@@ -13,17 +17,21 @@ public class PageRank
 	protected ArrayList<Node> nodeSet;
 	protected ArrayList<Term> adj;
 	protected ArrayList<Term> transition;
-	private ArrayList<Document> documents;
+	//private ArrayList<Document> documents;
 	protected HTreeMap<String,Double> nodeScore; 
 	protected double numOfNodes;
 	protected double numOfEdges;
 	protected double initialRank ;
 	private DB db;
 	
-	public PageRank(double a)
+	public PageRank(String indexDir,String outDir,String cborOutline,String outFile,String outParaFile,int top, double a) throws IOException
 	{
-		documents = SearchIndex.getTopDocumentList();
-		g = new Graph(documents);
+		//documents = SearchIndex.getTopDocumentList();
+		new SearchIndex(indexDir,outDir,cborOutline,outFile,top);
+		SearchIndex.searchPages();
+		g = SearchIndex.getGraph();
+		g.makeAdjacencySparseMatrix();
+		g.makeNumToIdMap();
 		db = DBMaker.fileDB("pageRank.db").fileMmapEnable().transactionEnable().make();
 		nodeSet = g.getNodeSet();
 		adj = g.getAdjacencySparseMatrix();
@@ -33,10 +41,10 @@ public class PageRank
 		numOfEdges = g.getNumberOfEdges();
 		initialRank = 1/numOfNodes ;
 		nodeScore = db.hashMap("nodeScore", Serializer.STRING, Serializer.DOUBLE).counterEnable().create();
-		calculate();
+		calculate(outParaFile);
 	}
 	
-	private void calculate()
+	private void calculate(String outParaFile) throws IOException
 	{
 		ArrayList<Double> vector = new ArrayList<Double>();
 		ArrayList<Double> newVector = new ArrayList<Double>();
@@ -45,18 +53,20 @@ public class PageRank
 			vector.add(Math.random());
 		newVector = vector;
 		
-		ArrayList<Term> transpose = SparseMatrix.transpose(transition);
-		ArrayList<Term> list = SparseMatrix.product(transpose, (1 - alpha));
-		
+		ArrayList<Term> transpose = SparseMatrix.transpose(adj);
+		ArrayList<Term> list = SparseMatrix.product(adj, (1 - alpha));
+		i=0;
 		do
 		{
 			vector = newVector;
 			newVector = SparseMatrix.product(vector, list);
 			newVector = SparseMatrix.add(newVector, (alpha/numOfNodes));
+			i++;
+			System.out.println(i);
 			
 		}
 		while(!isConverged(vector,newVector));
-		
+		System.out.println("converged after="+i);
 		for(i = 0; i < vector.size(); i++)
 		{
 			String nodeId = g.getNodeId(i);
@@ -64,7 +74,16 @@ public class PageRank
 			nodeScore.put(nodeId, score);
 		}
 		for(Object s : nodeScore.keySet())
-			System.out.println((String)s+" "+nodeScore.get(s));
+		{
+			System.out.println((String)s+" "+nodeScore.get(s)+"\n");
+		}
+		
+		FileWriter fw = new FileWriter(outParaFile, true);
+		for(Object s : nodeScore.keySet())
+		{
+			fw.write((String)s+" "+nodeScore.get(s)+"\n");
+		}
+		fw.close();
 	}
 	public double getNodeScore(String id)
 	{
