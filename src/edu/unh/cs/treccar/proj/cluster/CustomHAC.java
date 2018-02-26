@@ -1,10 +1,13 @@
 package edu.unh.cs.treccar.proj.cluster;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+
+import org.apache.lucene.queryparser.classic.ParseException;
 
 import edu.unh.cs.treccar.Data;
 import edu.unh.cs.treccar.proj.similarities.SimilarityFunction;
@@ -32,7 +35,7 @@ public class CustomHAC {
 		this.secids = sectionIDs;
 	}
 
-	public ArrayList<ArrayList<String>> cluster(){
+	public ArrayList<ArrayList<String>> cluster() throws IOException, ParseException{
 		ArrayList<ParaPairData> ppdList = this.ppds;
 		double[] optw = this.wVec;
 		// Initialization //
@@ -121,6 +124,10 @@ public class CustomHAC {
 		ArrayList<ArrayList<String>> listOfClusters = new ArrayList<ArrayList<String>>();
 		for(String c:clusters.keySet())
 			listOfClusters.add(clusters.get(c));
+		/*
+		ParaMapper pm = new ParaMapper(this.prop, listOfClusters, this.secids);
+		pm.map();
+		*/
 		return listOfClusters;
 	}
 	

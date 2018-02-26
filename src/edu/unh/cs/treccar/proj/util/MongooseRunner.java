@@ -42,7 +42,10 @@ public class MongooseRunner {
 					rlib.writeFeatureFile();
 				}
 				else if(cmd.equalsIgnoreCase("c")){
-					mh.runClustering(prop);
+					mh.runClustering();
+				}
+				else if(cmd.equalsIgnoreCase("pm")){
+					mh.runParaMapper();
 				}
 			}
 		} catch (IOException | ParseException | ClassNotFoundException e) {

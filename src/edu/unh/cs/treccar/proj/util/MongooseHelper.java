@@ -39,6 +39,7 @@ import org.apache.lucene.store.FSDirectory;
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.unh.cs.treccar.proj.cluster.CustomHAC;
+import edu.unh.cs.treccar.proj.cluster.ParaMapper;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
 import edu.unh.cs.treccar.proj.similarities.LeacockChodorowSimilarity;
@@ -75,7 +76,7 @@ public class MongooseHelper {
 		System.out.println("Thread pool size "+this.nThreads);
 	}
 	
-	public void runClustering(Properties p) throws IOException, ParseException, ClassNotFoundException{
+	public void runClustering() throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
@@ -109,6 +110,7 @@ public class MongooseHelper {
 		oos.writeObject(resultPageClusters);
 		oos.close();
 	}
+	
 	private double[] getWeightVecFromRlibModel(String modelFilePath) throws IOException{
 		double[] weightVec;
 		BufferedReader br = new BufferedReader(new FileReader(new File(modelFilePath)));
@@ -218,6 +220,28 @@ public class MongooseHelper {
 	    		break;
 	    }
 	    return result;
+	}
+	
+	public void runParaMapper(){
+		HashMap<String, ArrayList<ArrayList<String>>> dataCl;
+		try {
+			this.p.load(new FileInputStream(new File("project.properties")));
+			HashMap<String, ArrayList<String>> trainSec = DataUtilities.getArticleToplevelSecMap(this.p.getProperty("data-dir")+"/"+this.p.getProperty("outline"));
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(new File(this.p.getProperty("out-dir")+"/"+this.p.getProperty("cluster-out"))));
+			dataCl = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
+			ois.close();
+			for(String page:dataCl.keySet()){
+				//System.out.println(page+" started");
+				ParaMapper pm = new ParaMapper(this.p, dataCl.get(page), trainSec.get(page));
+				pm.map();
+				System.out.println(page+" done");
+			}
+			//ParaMapper pm = new ParaMapper(p, trainCl, trainSec);
+		} catch (IOException | ClassNotFoundException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void saveParaSimilarityData(HashMap<String, ArrayList<ParaPairData>> allPagesData, String filePath){
