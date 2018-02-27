@@ -1,6 +1,9 @@
 package carHypertextGraph;
 
-
+/**
+ * @author Shubham Chatterjee
+ * Class to do various operations on sparse matrices. 
+ */
 import java.util.ArrayList;
 
 public class SparseMatrix 
@@ -8,7 +11,12 @@ public class SparseMatrix
 	private static final int MAX_ROW = 12;
 	private static final int MAX_COL = 12;
 	private static final int MAX_TERMS = MAX_ROW * MAX_COL;
-	
+	/**
+	 * Transpose a sparse matrix represented as an arraylist of triples (row,col,val)
+	 * A less efficient algorithm.
+	 * @param a ArrayList representing the sparse matrix to be transposed
+	 * @return ArrayList<Term> Transpose of the sparse matrix
+	 */
 	public static ArrayList<Term> transpose2(ArrayList<Term> a)
 	{
 		ArrayList<Term> b = new ArrayList<Term>();
@@ -33,6 +41,12 @@ public class SparseMatrix
 		}
 		return b;
 	}
+	/**
+	 * Method to add a value to a vector of double values
+	 * @param list ArrayList<Double> Vector of double values
+	 * @param val Double Value to be added 
+	 * @return ArrayList<Double> Vector obtained after adding val to list
+	 */
 	public static ArrayList<Double> add(ArrayList<Double> list, double val)
 	{
 		ArrayList<Double> res = new ArrayList<Double>();
@@ -44,6 +58,12 @@ public class SparseMatrix
 		}
 		return res;
 	}
+	/**
+	 * Method to find the product of a sparse matrix and a constant value
+	 * @param list ArrayList<Term> Sparse matrix 
+	 * @param val Double Value to be multipled
+	 * @return ArrayList<Term> sparse matrix obtained after multiplying val with list
+	 */
 	public static ArrayList<Term> product(ArrayList<Term> list, double val)
 	{
 		ArrayList<Term> res = new ArrayList<Term>();
@@ -59,6 +79,12 @@ public class SparseMatrix
 		}
 		return res;
 	}
+	/**
+	 * Transpose a sparse matrix represented as an arraylist of triples (row,col,val)
+	 * A more efficient algorithm.
+	 * @param a ArrayList representing the sparse matrix to be transposed
+	 * @return ArrayList<Term> Transpose of the sparse matrix
+	 */
 	public static ArrayList<Term> transpose(ArrayList<Term> a)
 	{
 		ArrayList<Integer>rowTerms = new ArrayList<Integer>();
@@ -258,6 +284,12 @@ public class SparseMatrix
 		for(Term term : a)
 			System.out.println(term.getRowIndex()+"\t"+term.getColumnIndex()+"\t"+term.getValue());
 	}
+	/**
+	 * Method to find product of a vector of doubles and a sparse matrix
+	 * @param vector ArrayList<Double> Vector to be multiplied
+	 * @param matrix ArrayList<Term> Sparse matrix 
+	 * @return ArrayList<Double> vector obtained after multiplying vector with matrix
+	 */
 	public static ArrayList<Double> product(ArrayList<Double> vector,ArrayList<Term> matrix)
 	{
 		int numRows = matrix.get(0).getRowIndex();

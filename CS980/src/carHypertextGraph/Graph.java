@@ -2,6 +2,10 @@ package carHypertextGraph;
 
 
 //import org.apache.lucene.document.Document;
+/**
+ * @author Shubham Chatterjee
+ * Class representing a CAR Graph. The graph G=<N,E> consists of a set of nodes and edges. 
+ */
 import org.mapdb.*;
 
 //import main.SearchIndex;
@@ -33,6 +37,12 @@ public class Graph
 		//makeAdjacencySparseMatrix();
 		//makeNumToIdMap();
 	}
+	
+	/**
+	 * Method to create the node set of the graph.
+	 * @param pID ID of the paragraph represented by the node
+	 * @param entity entity list as a string
+	 */
 	public  void makeNodeSet(String pID, String entity)
 	{
 		System.out.println("Adding a node to node set of graph");
@@ -44,34 +54,67 @@ public class Graph
 		nodes.add(new Node(pID, nodeNumber,entityList));
 		nodeNumber++;
 	}	
+	/**
+	 * Accessor to get the node set of this graph
+	 * @return ArrayList<Node> List of nodes
+	 */
 	public ArrayList<Node> getNodeSet()
 	{
 		return nodes;
 	}
+	/**
+	 * Accessor to get the edge set of this graph
+	 * @return ArrayList<Edge> List of edges
+	 */
 	public ArrayList<Edge> getEdgeSet()
 	{
 		return this.edges;
 	}
+	/**
+	 * Accessor to get the adjacency matrix represented as a list of triples of this graph
+	 * @return ArrayList<Term> List of triples of non-zero values in the adjacency matrix
+	 */
 	public ArrayList<Term> getAdjacencySparseMatrix()
 	{
 		return this.adjMatrix;
 	}
+	/**
+	 * Accessor to get the number of nodes in this graph
+	 * 
+	 */
 	public int getNumberOfNodes()
 	{
 		return nodes.size();
 	}
+	/**
+	 * Acessor to get the number of edges in the graph
+	 * 
+	 */
 	public int getNumberOfEdges()
 	{
 		return this.edges.size();
 	}
+	/**
+	 * Accessor to get the number of outlinks of a node object 
+	 * @param node A node object representing the node
+	 */
 	public int getNumberOfOutlinks(Node node)
 	{
 		return outlinks.get(node.getNodeId());
 	}
+	/**
+	 * Accessor to get the number of outlinks of a node id
+	 * @param str id of the node
+	 */
 	public int getNumberOfOutlinks(String str)
 	{
 		return outlinks.get(str);
 	}
+	/**
+	 * Accessor to get the source node id of an edge corresponding to the node number
+	 * @param source node number of the source node
+	 * @return String node id of the node having number source
+	 */
 	public String getSourceNodeId(int source)
 	{
 		String id = "";
@@ -85,6 +128,11 @@ public class Graph
 		}
 		return id;
 	}
+	/**
+	 * Accessor to get the destination node id of an edge corresponding to the node number
+	 * @param dest node number of the destination node
+	 * @return String node id of the node having number dest
+	 */
 	public String getDestinationNodeId(int dest)
 	{
 		String id = "";
@@ -98,6 +146,10 @@ public class Graph
 		}
 		return id;
 	}
+	/**
+	 * Accessor to get the transition probability matrix of this graph
+	 * 
+	 */
 	public ArrayList<Term> getTransitionSparseMatrix()
 	{
 		int row, col;
@@ -120,10 +172,18 @@ public class Graph
 		}
 		return transition;
 	}
+	/**
+	 * Accessor to get the node id corresponding to a node number
+	 * @param number node number of the node
+	 * @return String node id of the node 
+	 */
 	public String getNodeId(int number)
 	{
 		return numToIdMap.get(number);
 	}
+	/**
+	 * Method to make a hashmap of node number as keys and node ids as values
+	 */
 	public void makeNumToIdMap()
 	{
 		System.out.println("making numToIDMap");
@@ -133,6 +193,9 @@ public class Graph
 			numToIdMap.put(node.getNodeNumber(), node.getNodeId());
 		}
 	}
+	/**
+	 * Method to make the adjacency matrix of the graph
+	 */
 	public void makeAdjacencySparseMatrix()
 	{
 		int count, u, v, num = 0;
@@ -171,7 +234,12 @@ public class Graph
 		}
 		adjMatrix.add(0,new Term(nodes.size(), nodes.size(), num));
 	}
-	
+	/**
+	 * Method to find if two lists have anything in common
+	 * @param list1 first list
+	 * @param list2 second list
+	 * @return true if they have something in common, else false
+	 */
 	private boolean isCommon(List<String> list1, List<String> list2)
 	{
 		for(String s : list1)

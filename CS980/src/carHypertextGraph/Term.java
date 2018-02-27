@@ -1,6 +1,11 @@
 package carHypertextGraph;
 
-
+/**
+ * 
+ * @author Shubham Chatterjee
+ *Class representing a term in the sparse matrix representation.
+ *Each term in the sparse matrix is represented as a triple (row, column, value)
+ */
 public class Term 
 {
 	private int column;

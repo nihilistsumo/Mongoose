@@ -1,6 +1,7 @@
 package main;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -26,6 +27,13 @@ import org.apache.lucene.store.FSDirectory;
 import carHypertextGraph.Graph;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
+
+/**
+ * 
+ * @author Shubham Chatterjee
+ * Class to search a Lucene Index.
+ *
+ */
 
 public class SearchIndex 
 {

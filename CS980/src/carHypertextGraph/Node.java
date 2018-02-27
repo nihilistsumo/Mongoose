@@ -1,6 +1,13 @@
 package carHypertextGraph;
 
-
+/**
+ * @author Shubham Chatterjee
+ * Class representing a Node in a graph.
+ * Each node has a node id which is the paragraph id of the paragraph which the node is representing,
+ * a node number which is the number of the node in the graph, and an entity list which is a list 
+ * of entities which the paragraph points to.
+ * 
+ */
 import java.util.List;
 
 public class Node 

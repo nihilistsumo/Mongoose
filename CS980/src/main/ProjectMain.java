@@ -7,6 +7,12 @@ import carHypertextGraph.MakeCARGraphFile;
 import carHypertextGraph.PageRank;
 import pageRank.PersonalisedPageRank;
 
+/**
+ * 
+ * @author Shubham Chatterjee
+ * Main class to handle calls to other clases.
+ *
+ */
 public class ProjectMain 
 {
 	

@@ -17,6 +17,12 @@ import org.apache.lucene.store.FSDirectory;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
+/**
+ * 
+ * @author Shubham Chatterjee
+ * Class to build a Lucene index. 
+ *
+ */
 
 public class BuildIndex 
 {

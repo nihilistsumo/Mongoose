@@ -1,6 +1,11 @@
 package carHypertextGraph;
 
-
+/**
+ * 
+ * @author Shubham Chatterjee
+ * Class representing an edge of a graph. Each edge has two nodes, a source and destination, which are paragraphs.
+ * Each node will have a number and id representing it. 
+ */
 public class Edge 
 {
 	private int sourceNum;

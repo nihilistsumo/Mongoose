@@ -1,6 +1,9 @@
 package carHypertextGraph;
 
-
+/**
+ * @author Shubham Chatterjee
+ * Class to implement the Pagerank Algorithm on the graph.
+ */
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
