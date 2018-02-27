@@ -29,6 +29,7 @@ import java.io.File;
 
 /*
  * @author Ajesh Vijayaragavan
+ * based on example from TREMA-UNH
  */
 
 public class HeadingWeights {
