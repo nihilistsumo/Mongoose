@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import edu.unh.cs.treccar.proj.hw.HeadingWeights;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 
@@ -46,6 +47,9 @@ public class MongooseRunner {
 				}
 				else if(cmd.equalsIgnoreCase("pm")){
 					mh.runParaMapper();
+				}
+				else if(cmd.equalsIgnoreCase("hw")){
+					HeadingWeights.main(args);
 				}
 			}
 		} catch (IOException | ParseException | ClassNotFoundException e) {
