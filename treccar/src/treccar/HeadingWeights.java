@@ -1,4 +1,4 @@
-package treccar;
+package lucene.searchandIndexing;
 
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.Data.Section;
@@ -67,16 +67,16 @@ public class HeadingWeights {
         System.setProperty("file.encoding", "UTF-8");
 
         String indexPath = args[1];
-        if (args.length != 5) {
+    /*    if (args.length != 5) {
         	System.out.println("Format: Outlinescborfile IndexPath Pagenameoutput lowestheadingoutput interiorheadingoutput");
         	System.exit(-1);
         }
-        
+        */
             IndexSearcher searcher = setupIndexSearcher(indexPath, "paragraph.lucene");
             searcher.setSimilarity(new BM25Similarity());
             final MyQueryBuilder queryBuilder = new MyQueryBuilder(new StandardAnalyzer());
             final String pagesFile = args[0];
-            
+     
             //BM25-pagename
             PrintWriter out1 = new PrintWriter(new FileWriter(args[2]));
             final FileInputStream fileInputStream1 = new FileInputStream(new File(pagesFile));
@@ -127,31 +127,41 @@ public class HeadingWeights {
 	            //}
 	        }
 	        out2.close();
-            
+ 
             //interior headings concatenated
             PrintWriter out3 = new PrintWriter(new FileWriter(args[4]));
+            List<String> queryStr4 = new ArrayList<String>();
             final FileInputStream fileInputStream3 = new FileInputStream(new File(pagesFile));
             for (Data.Page page : DeserializeData.iterableAnnotations(fileInputStream3)) {
                 for (List<Data.Section> sectionPath : page.flatSectionPaths()) {
                     final String queryId3 = Data.sectionPathId(page.getPageId(), sectionPath);
                     String queryStr3 = buildSectionQueryStrihc(page, sectionPath);
+                    if(!queryStr4.contains(queryStr3)) {
                     TopDocs tops = searcher.search(queryBuilder.toQuery(queryStr3), 100);
                     ScoreDoc[] scoreDoc = tops.scoreDocs;
-                    String paragraphid2 = null;
+                    List<String> paragraphid2 = new ArrayList<String>();
                     for (int i = 0; i < scoreDoc.length; i++) {
                         ScoreDoc score = scoreDoc[i];
                         final Document doc = searcher.doc(score.doc);
                         final String paragraphid = doc.getField("paragraphid").stringValue();
                         final float searchScore = score.score;
-                        final int searchRank = i+1;
-                        if (paragraphid != paragraphid2)
-                        	out3.println(queryId3+" Q0 "+paragraphid+" "+searchRank + " "+searchScore+" Lucene-BM25");
-                        paragraphid2 = paragraphid;
+                        final int searchRank = i+1;                        
+                        if (paragraphid2 != null) {
+                        	if(!paragraphid2.contains(paragraphid)) {
+                        		out3.println(queryId3+" Q0 "+paragraphid+" "+searchRank + " "+searchScore+" Lucene-BM25");
+                        		paragraphid2.add(paragraphid);
+                        	}
+                        	else {
+                        		System.out.println(queryId3+" Q0 "+paragraphid+" "+searchRank + " "+searchScore+" Lucene-BM25");
+                        	}
+                        }
                     }
-                }               
+                    queryStr4.add(queryStr3.toString());
+                    }
+                }
             }
             out3.close();
-       }     
+    }
     
     @NotNull
     private static IndexSearcher setupIndexSearcher(String indexPath, String typeIndex) throws IOException {
@@ -167,20 +177,20 @@ public class HeadingWeights {
         queryStr1.append(page.getPageName());
         return queryStr1.toString();
     }
+    
+    @NotNull   
+    private static String buildSectionQueryStrihc(Data.Page page, List<Data.Section> sectionPath) {
+        StringBuilder queryStr3 = new StringBuilder();
+        for (Data.Section section: sectionPath) {
+            queryStr3.append(" ").append(section.getHeading());      
+        }
+        return queryStr3.toString();
+    }
 
     @NotNull
     private static String buildSectionQueryStrlh(Data.Page page, List<Data.Section> sectionPath) {
     	Section queryStr2;
         queryStr2 = sectionPath.get(sectionPath.size() - 1);
         return queryStr2.toString();
-    }
-      
-    @NotNull
-    private static String buildSectionQueryStrihc(Data.Page page, List<Data.Section> sectionPath) {
-        StringBuilder queryStr3 = new StringBuilder();
-        for (Data.Section section: sectionPath) {
-            queryStr3.append(" ").append(section.getHeading());          
-        }
-        return queryStr3.toString();
     }
 }
