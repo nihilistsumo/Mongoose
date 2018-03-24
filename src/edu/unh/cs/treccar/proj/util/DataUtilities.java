@@ -6,17 +6,163 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.FieldInvertState;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 
 import co.nstant.in.cbor.CborException;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class DataUtilities {
+	
+	public static HashMap<String, double[]> getParaVecMap(Properties pr, ArrayList<String> paraids, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{
+		HashMap<String, double[]> paraVecMap = new HashMap<String, double[]>();
+		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(pr.getProperty("index-dir")).toPath()))));
+		Analyzer analyzer = new StandardAnalyzer();
+		QueryParser qp = new QueryParser("paraid", analyzer);
+		Document para;
+		int p = 1;
+		//System.out.println("Getting para vectors from glove");
+		for(String paraid:paraids){
+			para = is.doc(is.search(qp.parse(paraid), 1).scoreDocs[0].doc);
+			HashMap<String, Double> tokenTfidfMap = tokenTfidfMap(is, analyzer, para.get("parabody"));
+			//getAvgParaVec() is expensive op
+			paraVecMap.put(paraid, getAvgParaVec(tokenTfidfMap, tokenVecMap, vecSize));
+			p++;
+		}
+		return paraVecMap;
+	}
+	
+	public static HashMap<String, double[]> getSecVecMap(Properties pr, ArrayList<String> secids, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{
+		HashMap<String, double[]> secVecMap = new HashMap<String, double[]>();
+		Analyzer analyzer = new StandardAnalyzer();
+		//System.out.println("Getting para vectors from glove");
+		for(String secid:secids){
+			String[] tokens = secid.split(":")[1].replaceAll("%20", " ").replaceAll("/", " ").split(" ");
+			double[] secVec = new double[vecSize];
+			ArrayList<String> alreadySeen = new ArrayList<String>();
+			ArrayList<double[]> vecs = new ArrayList<double[]>();
+			for(String t:tokens){
+				if(alreadySeen.contains(t.toLowerCase()) || DataUtilities.stopwords.contains(t.toLowerCase()))
+					continue;
+				else if(tokenVecMap.keySet().contains(t.toLowerCase())){
+					vecs.add(tokenVecMap.get(t.toLowerCase()));
+					alreadySeen.add(t.toLowerCase());
+				}
+			}
+			for(double[] vec:vecs){
+				for(int i=0; i<vecSize; i++)
+					secVec[i]+=vec[i];
+			}
+			if(vecs.size()>0){
+				for(int i=0; i<vecSize; i++)
+					secVec[i]/=vecs.size();
+			}
+			secVecMap.put(secid, secVec);
+		}
+		return secVecMap;
+	}
+	
+	public static HashMap<String, double[]> readGloveFile(Properties pr) throws IOException{
+		HashMap<String, double[]> tokenVecMap = new HashMap<String, double[]>();
+		String gloveFilePath = pr.getProperty("glove-dir")+"/"+pr.getProperty("glove-file");
+		BufferedReader br = new BufferedReader(new FileReader(new File(gloveFilePath)));
+		String token;
+		String line = br.readLine();
+		int word2vecSize = line.split(" ").length-1;
+		double vec[];
+		while(line!=null){
+			token = line.split(" ")[0];
+			vec = new double[word2vecSize];
+			String[] vals = line.split(" ");
+			for(int i=1; i<vals.length; i++)
+				vec[i-1]+= Double.parseDouble(vals[i]);
+			tokenVecMap.put(token, vec);
+			line = br.readLine();
+		}
+		br.close();
+		return tokenVecMap;
+	}
+	
+	private static double[] getAvgParaVec(HashMap<String, Double> tokenTfidfMap, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException{
+		double[] avgVec = new double[vecSize];
+		int count = 0;
+		for(String token:tokenTfidfMap.keySet()){
+			if(tokenVecMap.containsKey(token)){
+				for(int i=0; i<tokenVecMap.get(token).length; i++)
+					avgVec[i]+= tokenVecMap.get(token)[i]*tokenTfidfMap.get(token);
+				count++;
+			}
+		}
+		if(count>1){
+			for(int i=0; i<avgVec.length; i++)
+				avgVec[i]/=count;
+		}
+		return avgVec;
+	}
+	
+	private static HashMap<String, Double> tokenTfidfMap(IndexSearcher is, Analyzer analyzer, String string) throws IOException{
+		HashMap<String, Double> result = new HashMap<String, Double>();
+	    Map<String, Long> termFreq = new HashMap<String, Long>();
+	    Map<String, Long> docFreq = new HashMap<String, Long>();
+	    
+	    String token;
+	    try {
+	    	TokenStream stream  = analyzer.tokenStream(null, new StringReader(string));
+	    	stream.reset();
+	    	while (stream.incrementToken()){
+	    		token = stream.getAttribute(CharTermAttribute.class).toString().toLowerCase();
+	    		if(DataUtilities.stopwords.contains(token))
+	    			continue;
+	    		if(termFreq.keySet().contains(token)){
+	    			termFreq.put(token, termFreq.get(token)+1);
+	    		}
+	    		else{
+	    			termFreq.put(token, (long) 1);
+	    			docFreq.put(token, (long) is.getIndexReader().docFreq(new Term("parabody",token)));
+	    		}
+	    	}
+	    	stream.close();
+	    } catch (IOException e) {
+	    	throw new RuntimeException(e);
+	    }
+	    for(String term:termFreq.keySet()){
+	    	result.put(term, 
+	    			termFreq.get(term)*(1+Math.log(is.getIndexReader().getDocCount("parabody")/(1+docFreq.get(term)))));
+	    }
+	    return getNormalizedTfidf(result);
+	}
+	
+	private static HashMap<String, Double> getNormalizedTfidf(HashMap<String, Double> tfidfMap){
+		HashMap<String, Double> normMap = new HashMap<String, Double>();
+		double total = 0;
+		for(String term:tfidfMap.keySet())
+			total+=tfidfMap.get(term);
+		for(String term:tfidfMap.keySet())
+			normMap.put(term, tfidfMap.get(term)/total);
+		return normMap;
+	}
 	
 	public static HashMap<String, Data.Paragraph> getParaMapFromPath(String path){
 		HashMap<String, Data.Paragraph> paras = new HashMap<String, Data.Paragraph>();
@@ -215,6 +361,31 @@ public class DataUtilities {
 				else{
 					ArrayList<String> paralist = new ArrayList<String>();
 					paralist.add(paraid);
+					pageParaMap.put(pageid, paralist);
+				}
+				line = br.readLine();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return pageParaMap;
+	}
+	
+	public static HashMap<String, ArrayList<String>> getPageParaMapWithScoresFromRunfile(String runfile){
+		HashMap<String, ArrayList<String>> pageParaMap = new HashMap<String, ArrayList<String>>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(runfile)));
+			String line = br.readLine();
+			while(line!=null){
+				String pageid = line.split(" ")[0];
+				String paraid = line.split(" ")[2];
+				String score = line.split(" ")[4];
+				if(pageParaMap.keySet().contains(pageid))
+					pageParaMap.get(pageid).add(paraid+" "+score);
+				else{
+					ArrayList<String> paralist = new ArrayList<String>();
+					paralist.add(paraid+" "+score);
 					pageParaMap.put(pageid, paralist);
 				}
 				line = br.readLine();
