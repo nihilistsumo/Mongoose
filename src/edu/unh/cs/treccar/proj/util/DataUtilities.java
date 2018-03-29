@@ -31,10 +31,35 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
 import co.nstant.in.cbor.CborException;
+import edu.unh.cs.treccar.proj.sum.Summarizer;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class DataUtilities {
+	
+	public static HashMap<String, ArrayList<String>> getParaSummaryMap(Properties pr, ArrayList<String> paraids) throws IOException, ParseException{
+		HashMap<String, ArrayList<String>> summaryMap = new HashMap<String, ArrayList<String>>();
+		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(pr.getProperty("index-dir")).toPath()))));
+		Analyzer analyzer = new StandardAnalyzer();
+		QueryParser qp = new QueryParser("paraid", analyzer);
+		Summarizer sum = new Summarizer();
+		//System.out.println("Getting para vectors from glove");
+		for(String paraid:paraids){
+			//summarize parabody as a list of important tokens
+			summaryMap.put(paraid, sum.summarize(pr, is, analyzer, qp, paraid));
+		}
+		return summaryMap;
+	}
+	
+	public static HashMap<String, ArrayList<String>> getSecTokenMap(Properties pr, ArrayList<String> secids) throws IOException, ParseException{
+		HashMap<String, ArrayList<String>> secTokenMap = new HashMap<String, ArrayList<String>>();
+		Analyzer analyzer = new StandardAnalyzer();
+		for(String secid:secids){
+			String[] tokens = secid.toLowerCase().split(":")[1].replaceAll("%20", " ").replaceAll("/", " ").split(" ");
+			secTokenMap.put(secid, new ArrayList<String>(Arrays.asList(tokens)));
+		}
+		return secTokenMap;
+	}
 	
 	public static HashMap<String, double[]> getParaVecMap(Properties pr, ArrayList<String> paraids, HashMap<String, double[]> tokenVecMap, int vecSize) throws IOException, ParseException{
 		HashMap<String, double[]> paraVecMap = new HashMap<String, double[]>();
@@ -42,14 +67,12 @@ public class DataUtilities {
 		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser qp = new QueryParser("paraid", analyzer);
 		Document para;
-		int p = 1;
 		//System.out.println("Getting para vectors from glove");
 		for(String paraid:paraids){
 			para = is.doc(is.search(qp.parse(paraid), 1).scoreDocs[0].doc);
 			HashMap<String, Double> tokenTfidfMap = tokenTfidfMap(is, analyzer, para.get("parabody"));
 			//getAvgParaVec() is expensive op
 			paraVecMap.put(paraid, getAvgParaVec(tokenTfidfMap, tokenVecMap, vecSize));
-			p++;
 		}
 		return paraVecMap;
 	}
@@ -122,7 +145,7 @@ public class DataUtilities {
 		return avgVec;
 	}
 	
-	private static HashMap<String, Double> tokenTfidfMap(IndexSearcher is, Analyzer analyzer, String string) throws IOException{
+	public static HashMap<String, Double> tokenTfidfMap(IndexSearcher is, Analyzer analyzer, String string) throws IOException{
 		HashMap<String, Double> result = new HashMap<String, Double>();
 	    Map<String, Long> termFreq = new HashMap<String, Long>();
 	    Map<String, Long> docFreq = new HashMap<String, Long>();
