@@ -82,7 +82,7 @@ public class MongooseHelper {
 			String word2vecFile, int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s){
 		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, 
 				word2vecFile, topSearch, topFeedback, topTerms, qe_method, cs_method, a, s);
-		ob.searchTopLevelSections();
+		ob.searchPageTitles();
 	}
 	
 	public void runClustering() throws IOException, ParseException, ClassNotFoundException{
