@@ -55,7 +55,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
  * @author Ajesh Vijayaragavan
  */
 
-public class LMJelinekMercer {
+public class LMJelinek {
 
     static class MyQueryBuilder {
 
