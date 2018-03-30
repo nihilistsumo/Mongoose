@@ -34,12 +34,14 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
 
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.unh.cs.treccar.proj.cluster.CustomHAC;
 import edu.unh.cs.treccar.proj.cluster.ParaMapper;
+import edu.unh.cs.treccar.proj.qe.Query;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
 import edu.unh.cs.treccar.proj.similarities.LeacockChodorowSimilarity;
@@ -74,6 +76,13 @@ public class MongooseHelper {
 		else
 			this.nThreads = Integer.parseInt(this.p.getProperty("threads"));
 		System.out.println("Thread pool size "+this.nThreads);
+	}
+	
+	public void runQueryExpand(String dir, String out_dir, String outline_file, String out_file, String stopFilePath, 
+			String word2vecFile, int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s){
+		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, 
+				word2vecFile, topSearch, topFeedback, topTerms, qe_method, cs_method, a, s);
+		ob.searchTopLevelSections();
 	}
 	
 	public void runClustering() throws IOException, ParseException, ClassNotFoundException{

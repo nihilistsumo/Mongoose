@@ -301,7 +301,7 @@ public class Query
 			System.exit(0);
 			}
 		}
-		private void searchTopLevelSections()
+		public void searchTopLevelSections()
 		{
 			String qString,qID;
 			BooleanQuery query;
