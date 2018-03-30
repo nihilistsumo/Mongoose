@@ -45,11 +45,13 @@
 		<artifactId>sqlite-jdbc</artifactId>
 		<version>3.7.2</version>
 	</dependency>
+	<!--
 	<dependency>
 		<groupId>de.sciss</groupId>
 		<artifactId>jawjaw</artifactId>
 		<version>0.1.0</version>
 	</dependency>
+	-->
 
 	<dependency>
 		<groupId>junit</groupId>
@@ -90,12 +92,13 @@
 		<artifactId>lucene-queryparser</artifactId>
 		<version>6.6.0</version>
 	</dependency>
-	
+	<!--
 	<dependency>
     	<groupId>de.sciss</groupId>
     	<artifactId>ws4j</artifactId>
     	<version>0.1.0</version>
 	</dependency>
+	-->
 	
 	<dependency>
     	<groupId>cc.mallet</groupId>
@@ -131,6 +134,32 @@
     	<systemPath>${project.basedir}/src/main/resources/ws4j-1.0.1.jar</systemPath>
 	</dependency>
 	-->
+	
+	<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.0</version>
+    <scope>compile</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.xerial</groupId>
+    <artifactId>sqlite-jdbc</artifactId>
+    <version>3.7.2</version>
+  </dependency>
+  <dependency>
+    <groupId>edu.cmu.lti</groupId>
+    <artifactId>jawjaw</artifactId>
+    <version>1.0.2</version>
+    <scope>system</scope> 
+    <systemPath>${basedir}/lib/jawjaw-1.0.2.jar</systemPath>
+  </dependency>
+  <dependency>
+    <groupId>edu.cmu.lti</groupId>
+    <artifactId>ws4j</artifactId>
+    <version>1.0.1</version>
+    <scope>system</scope> 
+    <systemPath>${basedir}/lib/ws4j-1.0.1.jar</systemPath>
+  </dependency>
 	
   </dependencies>
   <build>
