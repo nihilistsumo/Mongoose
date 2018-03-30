@@ -24,6 +24,7 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -39,8 +40,12 @@ import org.apache.lucene.store.FSDirectory;
 
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
-import edu.unh.cs.treccar.proj.cluster.CustomHAC;
+import edu.unh.cs.treccar.proj.cluster.ClusteringMetrics;
+import edu.unh.cs.treccar.proj.cluster.CustomHACSimilarity;
+import edu.unh.cs.treccar.proj.cluster.CustomHACWord2Vec;
+import edu.unh.cs.treccar.proj.cluster.CustomKMeansWord2Vec;
 import edu.unh.cs.treccar.proj.cluster.ParaMapper;
+import edu.unh.cs.treccar.proj.prmat.PageRankClusters;
 import edu.unh.cs.treccar.proj.qe.Query;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
@@ -78,6 +83,16 @@ public class MongooseHelper {
 		System.out.println("Thread pool size "+this.nThreads);
 	}
 	
+	public void runPRC(String clFilePath, String indexDir, String curlScriptPath){
+		PageRankClusters prc = new PageRankClusters();
+		try {
+			prc.prWithClusters(clFilePath, indexDir, curlScriptPath);
+		} catch (IOException | org.json.simple.parser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void runQueryExpand(String dir, String out_dir, String outline_file, String out_file, String stopFilePath, 
 			String word2vecFile, int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s){
 		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, 
@@ -85,7 +100,82 @@ public class MongooseHelper {
 		ob.searchPageTitles();
 	}
 	
-	public void runClustering() throws IOException, ParseException, ClassNotFoundException{
+	public void combineRunfilesForRLib(){
+		CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
+		try {
+			rlib.writeFetFile(p);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void runPlainTextExtractor(){
+		PlainTextExtractorForGlove pt = new PlainTextExtractorForGlove();
+		pt.plainTextExtractor(p.getProperty("data-dir")+"/"+p.getProperty("parafile"),
+				p.getProperty("out-dir")+"/"+p.getProperty("plaintextpara"));
+	}
+	
+	public void convertClusterDataToText() throws FileNotFoundException, IOException, ClassNotFoundException{
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out-txt"))));
+		for(String page:resultPageClusters.keySet()){
+			bw.write("PAGE:"+page+"\n");
+			ArrayList<ArrayList<String>> clusters = resultPageClusters.get(page);
+			for(ArrayList<String> cl:clusters){
+				for(String p:cl){
+					bw.write(p+" ");
+				}
+				bw.write("\n");
+			}
+		}
+		ois.close();
+		bw.close();
+	}
+	
+	public void runKMeansW2VClustering() throws IOException, ParseException{
+		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(
+				p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
+				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+		
+		/*
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
+				p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+		*/
+		HashMap<String, double[]> gloveVecs = DataUtilities.readGloveFile(p);
+		int vecSize = gloveVecs.entrySet().iterator().next().getValue().length;
+		
+		StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
+			try {
+				ArrayList<String> paraIDsInPage = pageParaMapRunFile.get(page);
+				//ArrayList<String> paraIDsInPage = pageParaMapArtQrels.get(page);
+				ArrayList<String> secIDsInPage = pageSecMap.get(page);
+				//ArrayList<ParaPairData> ppdList = similarityData.get(page);
+				HashMap<String, double[]> paraVecMap = DataUtilities.getParaVecMap(p, paraIDsInPage, gloveVecs, vecSize);
+				CustomKMeansWord2Vec kmeans = new CustomKMeansWord2Vec(p, page, secIDsInPage, paraVecMap);
+				if(paraIDsInPage.size()<secIDsInPage.size())
+					resultPageClusters.put(page, kmeans.cluster(paraIDsInPage.size(), false));
+				else
+					resultPageClusters.put(page, kmeans.cluster(secIDsInPage.size(), false));
+				System.out.println("Clustering done for "+page);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		});
+		
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
+				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		oos.writeObject(resultPageClusters);
+		oos.close();
+	}
+	
+	public void runHACSimClustering() throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
@@ -101,19 +191,56 @@ public class MongooseHelper {
 		double[] w = this.getWeightVecFromRlibModel(p.getProperty("out-dir")+"/"+p.getProperty("rlib-model"));
 		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
 				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
-		/*
-		HashMap<String, ArrayList<String>> pageParaMapArtQrels = DataUtilities.getGTMapQrels(
+		/* To cluster with true page-para map
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
 				p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
-				*/
+		*/
 		for(String page:pageSecMap.keySet()){
 			ArrayList<String> paraIDsInPage = pageParaMapRunFile.get(page);
 			//ArrayList<String> paraIDsInPage = pageParaMapArtQrels.get(page);
 			ArrayList<String> secIDsInPage = pageSecMap.get(page);
 			ArrayList<ParaPairData> ppdList = similarityData.get(page);
-			CustomHAC hac = new CustomHAC(p, page, w, secIDsInPage, paraIDsInPage, ppdList);
+			CustomHACSimilarity hac = new CustomHACSimilarity(p, page, w, secIDsInPage, paraIDsInPage, ppdList);
 			resultPageClusters.put(page, hac.cluster());
 			System.out.println("Clustering done for "+page);
 		}
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
+				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		oos.writeObject(resultPageClusters);
+		oos.close();
+	}
+	
+	public void runHACW2VClustering() throws IOException, ParseException, ClassNotFoundException{
+		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
+		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		/*
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
+				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+		*/
+		HashMap<String, double[]> gloveVecs = DataUtilities.readGloveFile(p);
+		int vecSize = gloveVecs.get("the").length;
+		/* To cluster with true page-para map */
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
+				p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+		
+		StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
+			try {
+				ArrayList<String> paraIDsInPage = pageParaMapRunFile.get(page);
+				//ArrayList<String> paraIDsInPage = pageParaMapArtQrels.get(page);
+				ArrayList<String> secIDsInPage = pageSecMap.get(page);
+				//ArrayList<ParaPairData> ppdList = similarityData.get(page);
+				HashMap<String, double[]> paraVecMap = DataUtilities.getParaVecMap(p, paraIDsInPage, gloveVecs, vecSize);
+				CustomHACWord2Vec hac = new CustomHACWord2Vec(p, page, paraIDsInPage, secIDsInPage, paraVecMap);
+				resultPageClusters.put(page, hac.cluster());
+				System.out.println("Clustering done for "+page);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		});
+		
 		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
 				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
 		oos.writeObject(resultPageClusters);
@@ -231,6 +358,27 @@ public class MongooseHelper {
 	    return result;
 	}
 	
+	public void runClusteringMeasure() throws FileNotFoundException, IOException, ClassNotFoundException{
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(
+				this.p.getProperty("out-dir")+"/"+this.p.getProperty("cluster-out"))));
+		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
+		double rand, fmeasure, meanRand = 0, meanF = 0;
+		int count = 0;
+		for(String pageid:candClusters.keySet()){
+			ClusteringMetrics cm = new ClusteringMetrics(DataUtilities.getGTClusters(
+					pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("top-qrels")), candClusters.get(pageid), false);
+			rand = cm.getAdjRAND();
+			fmeasure = cm.fMeasure();
+			meanRand+=rand;
+			meanF+=fmeasure;
+			count++;
+			System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
+		}
+		meanRand/=count;
+		meanF/=count;
+		System.out.println("Mean Adj RAND = "+meanRand+", mean fmeasure = "+meanF);
+	}
+	
 	public void runParaMapper(){
 		HashMap<String, ArrayList<ArrayList<String>>> dataCl;
 		try {
@@ -241,8 +389,8 @@ public class MongooseHelper {
 			dataCl = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
 			ois.close();
 			for(String page:dataCl.keySet()){
-				//System.out.println(page+" started");
-				ParaMapper pm = new ParaMapper(this.p, dataCl.get(page), trainSec.get(page));
+				System.out.println(page+" started");
+				ParaMapper pm = new ParaMapper(this.p, dataCl.get(page), trainSec.get(page), DataUtilities.readGloveFile(p));
 				pm.map();
 				System.out.println(page+" done");
 			}

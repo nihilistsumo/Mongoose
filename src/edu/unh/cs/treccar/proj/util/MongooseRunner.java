@@ -12,9 +12,9 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
-import edu.unh.cs.treccar.proj.hw.HeadingWeights;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
+import edu.unh.cs.treccar.proj.sum.SummaryMapper;
 
 public class MongooseRunner {
 
@@ -48,10 +48,32 @@ public class MongooseRunner {
 					rlib.writeFeatureFile();
 				}
 				else if(cmd.equalsIgnoreCase("c")){
-					mh.runClustering();
+					mh.runHACSimClustering();
+				}
+				else if(cmd.equalsIgnoreCase("cw")){
+					mh.runHACW2VClustering();
+				}
+				else if(cmd.equalsIgnoreCase("km")){
+					mh.runKMeansW2VClustering();
 				}
 				else if(cmd.equalsIgnoreCase("pm")){
 					mh.runParaMapper();
+				}
+				else if(cmd.equalsIgnoreCase("cm")){
+					mh.runClusteringMeasure();
+				}
+				else if(cmd.equalsIgnoreCase("cb")){
+					mh.convertClusterDataToText();
+				}
+				else if(cmd.equalsIgnoreCase("pt")){
+					mh.runPlainTextExtractor();
+				}
+				else if(cmd.equalsIgnoreCase("cmb")){
+					mh.combineRunfilesForRLib();
+				}
+				else if(cmd.equalsIgnoreCase("sm")){
+					SummaryMapper sm = new SummaryMapper(prop);
+					sm.map(prop);
 				}
 				else if(cmd.equalsIgnoreCase("qe")){
 					Similarity sim = null;
@@ -80,8 +102,9 @@ public class MongooseRunner {
 							Integer.parseInt(args[6]), Integer.parseInt(args[7]), Integer.parseInt(args[8]), 
 							args[9], args[10], new StandardAnalyzer(), sim);
 				}
-				else if(cmd.equalsIgnoreCase("hw")){
-					HeadingWeights.main(args);
+				else if(cmd.equalsIgnoreCase("prc")){
+					mh.runPRC(prop.getProperty("out-dir")+"/"+prop.getProperty("cluster-out"), prop.getProperty("index-dir"), 
+							prop.getProperty("curl-path"));
 				}
 			}
 		} catch (IOException | ParseException | ClassNotFoundException e) {

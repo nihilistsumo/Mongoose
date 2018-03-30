@@ -30,8 +30,9 @@ public class ParaMapper {
 	ArrayList<ArrayList<String>> cl;
 	ArrayList<String> titleIDsToMap;
 	int word2vecSize;
+	HashMap<String, double[]> tokenVecMap;
 	
-	public ParaMapper(Properties p, ArrayList<ArrayList<String>> clusters, ArrayList<String> titles){
+	public ParaMapper(Properties p, ArrayList<ArrayList<String>> clusters, ArrayList<String> titles, HashMap<String, double[]> gloveVecs){
 		this.pr = p;
 		this.cl = clusters;
 		this.titleIDsToMap = titles;
@@ -45,6 +46,7 @@ public class ParaMapper {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		this.tokenVecMap = gloveVecs;
 	}
 	
 	public void map() throws IOException, ParseException{
@@ -65,14 +67,17 @@ public class ParaMapper {
 			ArrayList<String> parasInCluster = labeledClusters.get(clabel);
 			ArrayList<double[]> allVecs = new ArrayList<double[]>();
 			double[] clusterVec = new double[this.word2vecSize];
+			/*
 			Document paradoc;
 			ArrayList<String> paraTokens;
 			double val = 0;
 			for(String paraid:parasInCluster){
 				paradoc = is.doc(is.search(qp.parse(paraid), 1).scoreDocs[0].doc);
 				paraTokens = MongooseHelper.tokenizeString(analyzer, paradoc.get("parabody"));
-				allVecs.add(this.getAvgWord2VecFromTokenList(paraTokens));
+				//allVecs.add(this.getAvgWord2VecFromTokenList(paraTokens));
 			}
+			*/
+			allVecs = new ArrayList<double[]>(DataUtilities.getParaVecMap(pr, parasInCluster, tokenVecMap, word2vecSize).values());
 			clusterVec = allVecs.get(0);
 			for(int i=1; i<allVecs.size(); i++){
 				for(int j=0; j<clusterVec.length; j++){
@@ -86,7 +91,7 @@ public class ParaMapper {
 		}
 		for(String title:this.titleIDsToMap){
 			ArrayList<String> tokens = new ArrayList<String>();
-			String trimmedTitle = title.split(":")[1].replaceAll("%20", " ").replaceAll("/", " ");
+			String trimmedTitle = title.toLowerCase().split(":")[1].replaceAll("%20", " ").replaceAll("/", " ");
 			for(String token:trimmedTitle.split(" "))
 				tokens.add(token);
 			titleVecMap.put(title, this.getAvgWord2VecFromTokenList(tokens));
@@ -119,7 +124,7 @@ public class ParaMapper {
 						}
 					}
 					for(String paraid:cl.get(clabels.get(clIndex))){
-						System.out.print(tids.get(i)+" Q0 "+paraid+" 0 "+max+" TOP\n");
+						//System.out.print(tids.get(i)+" Q0 "+paraid+" 0 "+max+" TOP\n");
 						bw.append(tids.get(i)+" Q0 "+paraid+" 0 "+max+" TOP\n");
 					}
 					clScores[clIndex] = -99;
@@ -137,26 +142,13 @@ public class ParaMapper {
 		ArrayList<double[]> allVecs = new ArrayList<double[]>();
 		//BufferedReader br = new BufferedReader(new FileReader(new File(this.pr.getProperty("glove-dir")+"/"+this.pr.getProperty("glove-file"))));
 		for(String token:tokens){
-			BufferedReader br = new BufferedReader(new FileReader(new File(this.pr.getProperty("glove-dir")+"/"+this.pr.getProperty("glove-file"))));
-			double[] vec = new double[this.word2vecSize];
-			String line = br.readLine();
-			while(line!=null && !line.startsWith(token.toLowerCase()+" "))
-				line = br.readLine();
-			if(line==null){
-				//System.out.println("token not found in glove");
-				continue;
-			}
-			String[] vals = line.split(" ");
-			for(int i=1; i<vals.length; i++)
-				vec[i-1] = Double.parseDouble(vals[i]);
-			allVecs.add(vec);
-			br.close();
+			if(this.tokenVecMap.keySet().contains(token))
+				allVecs.add(this.tokenVecMap.get(token));
 		}
 		if(allVecs.size()==0)
 			return avgVec;
-		avgVec = allVecs.get(0);
 		//System.out.println(avgVec.length);
-		for(int i=1; i<allVecs.size(); i++){
+		for(int i=0; i<allVecs.size(); i++){
 			for(int j=0; j<avgVec.length; j++){
 				avgVec[j]+=allVecs.get(i)[j];
 			}
@@ -200,12 +192,12 @@ public class ParaMapper {
 			ois.close();
 			for(String page:dataCl.keySet()){
 				System.out.println(page+" started");
-				ParaMapper pm = new ParaMapper(p, dataCl.get(page), trainSec.get(page));
-				pm.map();
+				//ParaMapper pm = new ParaMapper(p, dataCl.get(page), trainSec.get(page));
+				//pm.map();
 				System.out.println(page+" done");
 			}
 			//ParaMapper pm = new ParaMapper(p, trainCl, trainSec);
-		} catch (IOException | ClassNotFoundException | ParseException e) {
+		} catch (IOException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

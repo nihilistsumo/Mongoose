@@ -93,6 +93,105 @@ public class PageRankClusters {
 		}
 	}
 	
+	public void prWithClusters(String clFilePath, String indexDir, String curlScriptPath) throws IOException, ParseException {
+		
+		System.setProperty("file.encoding","UTF-8");
+		
+		// Check command line argument
+		
+		String index_path = indexDir;
+		IndexSearcher searcher = setUpIndexSearcher(index_path, "paragraph.lucene");
+		searcher.setSimilarity(new BM25Similarity());
+		final MyQueryBuilder query_builder = new MyQueryBuilder(new StandardAnalyzer());
+		
+		// Read in data 
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clFilePath)));
+		
+		try {
+			data = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		ois.close();
+		
+		// checkReadData();
+
+		int count = 0;
+		ranked_data = new HashMap<String, ArrayList<HashMap<String, Double>>>();
+		ranked_data_common_words = new HashMap<String, ArrayList<HashMap<String, Double>>>();
+		
+		for (String pageID : data.keySet()) {
+			ArrayList<ArrayList<String>> clusters_in_page = data.get(pageID);
+			
+			ArrayList<HashMap<String, Double>> ranked_clusters = new ArrayList<HashMap<String, Double>>();
+			ArrayList<HashMap<String, Double>> ranked_clusters_common_words = new ArrayList<HashMap<String, Double>>();
+			
+			for (ArrayList<String> cluster : clusters_in_page) {				
+				LinkedHashMap<String, List<String>> entities_in_paragraph = new LinkedHashMap<String, List<String>>();
+				
+				HashMap<String, Double> page_rank_result = new HashMap<String, Double>();
+				HashMap<String, Double> page_rank_from_common_words = new HashMap<String, Double>();
+				
+				Map<String, String> paragraphs_text = new HashMap<String, String>();
+				
+				for (String paragraphID : cluster) {
+					String query_string = paragraphID;
+					TopDocs tops = searcher.search(query_builder.toIDQuery(query_string), 1);
+					ScoreDoc[] score_doc = tops.scoreDocs;
+					ScoreDoc score = score_doc[0];
+					
+					final Document doc = searcher.doc(score.doc);
+	 				final String paragraph_text = doc.getField("text").stringValue();
+	 				
+	 				Entities e = new Entities();
+	 				e.setUp(curlScriptPath);
+	 				
+	 				List<String> e_list = e.retrieveEntities(paragraph_text);
+	 				entities_in_paragraph.put(paragraphID, e_list);
+	 				
+	 				paragraphs_text.put(paragraphID, paragraph_text);
+				}
+				
+				// PageRank using entities in paragraphs
+				PageRank pr = new PageRank();
+				page_rank_result = pr.getPageRank(entities_in_paragraph);	
+				
+				// PageRank using common words
+				CommonWords cw = new CommonWords();
+				page_rank_from_common_words = cw.getPageRank(paragraphs_text);
+				
+				ranked_clusters.add(page_rank_result);
+				ranked_clusters_common_words.add(page_rank_from_common_words);
+			}
+			
+			// Store ranked results per page
+			ranked_data.put(pageID, ranked_clusters);
+			ranked_data_common_words.put(pageID, ranked_clusters_common_words);
+			
+			if (count % 25 == 0)
+				System.out.println();
+			System.out.print(".");
+			count++;
+		}
+		
+		printOutput(ranked_data);
+		printOutput(ranked_data_common_words);
+		
+		FileOutputStream fileOut = new FileOutputStream("ranked_cluster_1");
+		ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		out.writeObject(ranked_data);
+		out.close();
+		fileOut.close();
+		
+		FileOutputStream fileOut2 = new FileOutputStream("ranked_cluster_2");
+		ObjectOutputStream out2 = new ObjectOutputStream(fileOut2);
+		out2.writeObject(ranked_data_common_words);
+		out2.close();
+		fileOut2.close();
+	}
+	
 	public static void main(String[] args) throws IOException, ParseException {
 		
 		System.setProperty("file.encoding","UTF-8");
