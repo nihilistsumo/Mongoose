@@ -1,4 +1,4 @@
-package lucene.searchandIndexing;
+package edu.unh.cs.treccar.proj.entlinkqe;
 
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.Data.Section;
