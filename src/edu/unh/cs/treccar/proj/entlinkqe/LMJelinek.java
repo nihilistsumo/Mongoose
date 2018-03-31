@@ -1,5 +1,6 @@
 package edu.unh.cs.treccar.proj.entlinkqe;
 
+
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.Data.Section;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
@@ -53,6 +54,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 /*
  * @author Ajesh Vijayaragavan
+ * LM-Jelinek Mercer
  */
 
 public class LMJelinek {
@@ -116,41 +118,7 @@ public class LMJelinek {
 	                //System.out.println(queryStr2);
 	                break;
 	            }
-	            /*
-	            String[] arr = queryStr2.split("\'");
-	            String arr2 = arr[1].toLowerCase();
-	            //System.out.println(arr[1]);
-	            
-	            //System.exit(-1);          
-		        //url = "http://api.conceptnet.io/c/en/" + URLEncoder.encode(queryBuilder.toQuery(queryStr2), "UTF-8");
-	            //url = "http://api.conceptnet.io/c/en/" + arr2;
-          	
-	           	try {
-	                     HttpClient client = HttpClientBuilder.create().build();
-	                     HttpGet request = new HttpGet(url);
-	                     HttpResponse response = client.execute(request);
-	          
-	                     int responseCode = response.getStatusLine().getStatusCode();
-	                     BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-	                     String line = "";
-	                     StringBuilder sb = new StringBuilder();
-	                     while ((line = rd.readLine()) != null) {
-	                         sb.append(line.trim());
-	                     }
-	                    System.out.println(sb);
-	                     System.exit(-1);
-	          
-	                 } catch (ClientProtocolException e) {
-	                     e.printStackTrace();
-	                 } catch (UnsupportedOperationException e) {
-	                     e.printStackTrace();
-	                 } catch (IOException e) {
-	                     e.printStackTrace();
-	                 }        
-	
-	            	 System.exit(-1); 
-	            }
-	        */
+
 	                TopDocs tops = searcher.search(queryBuilder.toQuery(queryStr2), 100);
 	                ScoreDoc[] scoreDoc = tops.scoreDocs;
 	                String paragraphid2 = null;
@@ -165,7 +133,7 @@ public class LMJelinek {
 	                    paragraphid2 = paragraphid;
 	                }
     }	        
-	        out1.close();	        
+	        out1.close();
     }
     
     @NotNull
