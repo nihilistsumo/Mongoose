@@ -150,7 +150,7 @@
     <artifactId>sqlite-jdbc</artifactId>
     <version>3.7.2</version>
   </dependency>
-  <!--  
+  
   <dependency>
     <groupId>edu.cmu.lti</groupId>
     <artifactId>jawjaw</artifactId>
@@ -165,7 +165,7 @@
     <scope>system</scope> 
     <systemPath>${basedir}/lib/ws4j-1.0.1.jar</systemPath>
   </dependency>
-  -->
+
   </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
