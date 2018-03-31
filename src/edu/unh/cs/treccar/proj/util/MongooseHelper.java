@@ -74,7 +74,8 @@ public class MongooseHelper {
 		//this.parasMap = DataUtilities.getParaMapFromPath(pr.getProperty("data-dir")+"/"+pr.getProperty("parafile"));
 		//this.preprocessedParasMap = DataUtilities.getPreprocessedParaMap(parasMap);
 		//this.reducedParasMap = DataUtilities.getReducedParaMap(preprocessedParasMap);
-		this.sc = new SimilarityCalculator();
+		if(pr.getProperty("mode").equalsIgnoreCase("-p") || pr.getProperty("mode").equalsIgnoreCase("-l"))
+			this.sc = new SimilarityCalculator();
 		if(this.p.getProperty("use-default-poolsize").equalsIgnoreCase("yes")||
 				this.p.getProperty("use-default-poolsize").equalsIgnoreCase("y"))
 			this.nThreads = Runtime.getRuntime().availableProcessors()+1;
