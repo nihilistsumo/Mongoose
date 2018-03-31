@@ -9,6 +9,10 @@
           <id>jitpack.io</id>
           <url>https://jitpack.io</url>
       </repository>
+      <repository>
+        <id>local-maven-repo</id>
+        <url>file:///${project.basedir}/local-maven-repo</url>
+      </repository>
   </repositories>
   
   <dependencies>
@@ -146,6 +150,7 @@
     <artifactId>sqlite-jdbc</artifactId>
     <version>3.7.2</version>
   </dependency>
+  <!--  
   <dependency>
     <groupId>edu.cmu.lti</groupId>
     <artifactId>jawjaw</artifactId>
@@ -160,7 +165,7 @@
     <scope>system</scope> 
     <systemPath>${basedir}/lib/ws4j-1.0.1.jar</systemPath>
   </dependency>
-	
+  -->
   </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
