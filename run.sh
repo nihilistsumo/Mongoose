@@ -13,5 +13,7 @@ rm similarity.conf jawjaw.conf wnjpn.db
 echo "Done"
 #cd Mongoose
 mkdir ../mongoose-results
-echo "Now running code..."
+echo "Installation complete"
+echo "Run Mongoose using: java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+echo "Results will be saved at mongoose-results"
 #java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar
