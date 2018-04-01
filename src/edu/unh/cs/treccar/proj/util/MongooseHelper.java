@@ -93,11 +93,13 @@ public class MongooseHelper {
 			e.printStackTrace();
 		}
 	}
-	
+	/*
 	public void runQueryExpand(String dir, String out_dir, String outline_file, String out_file, String stopFilePath, 
 			String word2vecFile, int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s){
-		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, 
-				word2vecFile, topSearch, topFeedback, topTerms, qe_method, cs_method, a, s);
+	*/
+	public void runQueryExpand(Properties p, Analyzer a, Similarity s){
+		Query.Search ob = new Query.Search(p.getProperty("index-dir"), p.getProperty("out-dir"), p.getProperty("data-dir")+"/"+p.getProperty("outline"), p.getProperty("trec-runfile"), p.getProperty("stopfile"), 
+				p.getProperty("glove-dir")+"/"+p.getProperty("glove-file"), Integer.parseInt(p.getProperty("no-ret")), 100, 10, p.getProperty("qe-method"), p.getProperty("cs-method"), a, s);
 		ob.searchPageTitles();
 	}
 	

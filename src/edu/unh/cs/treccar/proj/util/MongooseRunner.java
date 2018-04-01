@@ -77,17 +77,17 @@ public class MongooseRunner {
 				}
 				else if(cmd.equalsIgnoreCase("qe")){
 					Similarity sim = null;
-					if(args[10].equals("BM25"))
+					if(prop.getProperty("cs-method").equals("BM25"))
 					{
 						System.out.println("Using BM25 for candidate set generation");
 						sim = new BM25Similarity();
 					}
-					else if(args[10].equals("LM-DS"))
+					else if(prop.getProperty("cs-method").equals("LM-DS"))
 					{
 						System.out.println("Using LM-DS for candidate set generation");
 						sim = new LMDirichletSimilarity();
 					}
-					else if(args[10].equals("LM-JM"))
+					else if(prop.getProperty("cs-method").equals("LM-JM"))
 					{
 						System.out.println("Using LM-JM for candidate set generation");
 						float lambda = Float.parseFloat(args[11]);
@@ -98,9 +98,7 @@ public class MongooseRunner {
 						System.out.println("Using BM25 as default for candidate set generation");
 						sim = new BM25Similarity();
 					}
-					mh.runQueryExpand(args[0], args[1], args[2], args[3], args[4], args[5], 
-							Integer.parseInt(args[6]), Integer.parseInt(args[7]), Integer.parseInt(args[8]), 
-							args[9], args[10], new StandardAnalyzer(), sim);
+					mh.runQueryExpand(prop, new StandardAnalyzer(), sim);
 				}
 				else if(cmd.equalsIgnoreCase("prc")){
 					mh.runPRC(prop.getProperty("out-dir")+"/"+prop.getProperty("cluster-out"), prop.getProperty("index-dir"), 
