@@ -36,13 +36,33 @@ import org.apache.lucene.store.FSDirectory;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
+/**
+ * This class is used to index the documents into a Lucene index
+ * @author Shubham Chatterjee
+ *
+ */
+
 public class Index 
 {
+	/**
+	 * Directory where index is stored
+	 */
 	private  static String INDEX_DIR ;
+	/**
+	 * Path to the paragraph corpus file
+	 */
 	private  static String CBOR_FILE ;
+	/**
+	 * Number of documents indexed
+	 */
 	private static int COUNT;
 	private  static IndexSearcher is = null;
 	private  static QueryParser qp = null;
+	/**
+	 * Inner class to build a luecene index
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public  final static class Build
 	{
 		private static HashMap<String,Float> pageRankScore;
@@ -55,6 +75,18 @@ public class Index
 			COUNT = 0;
 			pageRankScore = new HashMap<String,Float>();
 			getPageRankScores();
+		}
+		/**
+		 * Builds a Lucene index of paragraphs in CBOR_FILE in the directory pointed to by INDEX_DIR 
+		 * @param INDEX_DIR String Directory to store index
+		 * @param CBOR_FILE String Paragraph corpus file
+		 * @throws IOException
+		 */
+		public Build(String INDEX_DIR,String CBOR_FILE) throws IOException
+		{
+			Index.INDEX_DIR = INDEX_DIR;
+			Index.CBOR_FILE = CBOR_FILE;
+			COUNT = 0;
 		}
 		private void getPageRankScores() throws IOException
 		{
@@ -73,6 +105,12 @@ public class Index
 			br.readLine();
 			reader.close();
 		}
+		/**
+		 * Create an IndexWriter object with the specified Analyzer
+		 * @param analyzer Analyzer Type of analyzer to use for building the index
+		 * @return IndexWriter An instance of the index writer to build the index
+		 * @throws IOException
+		 */
 		private static IndexWriter createWriter(Analyzer analyzer)throws IOException
 		{
 			Directory indexdir = FSDirectory.open((new File(INDEX_DIR)).toPath());
@@ -81,6 +119,13 @@ public class Index
 			IndexWriter iw = new IndexWriter(indexdir, conf);
 			return iw;
 		}
+		/**
+		 * Create a document with the given entity, text and id
+		 * @param entity String 
+		 * @param text String 
+		 * @param id String 
+		 * @return Document An document containing the given fields
+		 */
 		private static Document createDocument2(String entity, String text, String id)
 		{
 			
@@ -92,6 +137,11 @@ public class Index
 			System.out.println(id);
 			return doc;
 		}
+		/**
+		 * Create a document of the specified paragraph with the text and id
+		 * @param para Data.Patagraph A paragraph object 
+		 * @return Document A document containing the text and id as fields
+		 */
 		private static Document createDocument(Data.Paragraph para)
 		{
 			COUNT++;
@@ -114,6 +164,11 @@ public class Index
 			System.out.println(para.getParaId());
 			return paradoc;
 		}
+		/**
+		 * Create a Lucene index for each paragraph with text and id using the given analyzer
+		 * @param analyzer Analyzer Analyzer to use to create the index
+		 * @throws IOException
+		 */
 		public static void createIndex(Analyzer analyzer)throws IOException
 		{
 			IndexWriter writer = createWriter(analyzer);
@@ -132,6 +187,11 @@ public class Index
 			}
 			writer.close();
 		}
+		/**
+		 * Create a Lucene index for each entity in each paragraph using the given analyzer
+		 * @param analyzer  Analyzer Analyzer to use to create the index
+		 * @throws IOException
+		 */
 		public static void createIndex2(Analyzer analyzer)throws IOException
 		{
 			IndexWriter writer = createWriter(analyzer);
@@ -160,8 +220,18 @@ public class Index
 			writer.close();
 		}
 	}
+	/**
+	 * Inner class to setup a Lucene index for search
+	 * Use this class for setting up the searcher in a specified way for searching the index
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class Setup
 	{
+		/**
+		 * Set up the searcher with default BM25 similarity and StandardAnalyzer to search in the INDEX_DIR
+		 * @param INDEX_DIR
+		 */
 		public Setup(String INDEX_DIR)
 		{
 			Index.INDEX_DIR = INDEX_DIR;
@@ -175,6 +245,13 @@ public class Index
 				e.printStackTrace();
 			}
 		}
+		/**
+		 * Set up the searcher to search a specific field in the index directory provided using the analyzer and similarity given
+		 * @param INDEX_DIR String Directory for index
+		 * @param field String Field to search within the index
+		 * @param analyzer Analyzer Analyzer to use to search the index
+		 * @param sim Similarity Similarity metric to use to score the documents 
+		 */
 		public Setup(String INDEX_DIR, String field, Analyzer analyzer, Similarity sim)
 		{
 			Index.INDEX_DIR = INDEX_DIR;
@@ -188,6 +265,12 @@ public class Index
 				e.printStackTrace();
 			}
 		}
+		/**
+		 * Create a searcher which scores documents using the provided similarity metric
+		 * @param sim Similarity Similarity metric to use to score the documents
+		 * @return IndexSearcher Searcher to search the lucene index
+		 * @throws IOException
+		 */
 		private IndexSearcher createSearcher(Similarity sim)throws IOException
 		{
 			Directory dir = FSDirectory.open((new File(INDEX_DIR).toPath()));
@@ -196,6 +279,11 @@ public class Index
 	        searcher.setSimilarity(sim);
 	        return searcher;
 		}
+		/**
+		 * Create a searcher which scores documents using the default BM25 similarity 
+		 * @return IndexSearcher Searcher to search the lucene index
+		 * @throws IOException
+		 */
 		private IndexSearcher createSearcher()throws IOException
 		{
 			Directory dir = FSDirectory.open((new File(INDEX_DIR).toPath()));
@@ -204,38 +292,89 @@ public class Index
 	        searcher.setSimilarity(new BM25Similarity());
 	        return searcher;
 		}
+		/**
+		 * Create a query parser which parses queries using the standard analyzer and searcher in the parabody
+		 * @return QueryParser Parser to parse the query
+		 * @throws IOException
+		 */
 		private QueryParser createParser()throws IOException
 		{
 			QueryParser parser = new QueryParser("parabody", new StandardAnalyzer());
 			return parser;
 		}
+		/**
+		 * Create a query parser which parses queries using the analyzer provided and searches the given field
+		 * @param field String Field to search the query
+		 * @param analyzer Analyzer to use to parse the query
+		 * @return QueryParser Parser to parse the query
+		 * @throws IOException
+		 */
 		private QueryParser createParser(String field, Analyzer analyzer)throws IOException
 		{
 			QueryParser parser = new QueryParser(field, analyzer);
 			return parser;
 		}
+		/**
+		 * Get the IndexSearcher instance
+		 * @return IndexSearcher
+		 */
 		public IndexSearcher getSearcher()
 		{
 			return is;
 		}
+		/**
+		 * Get the QueryParser instance
+		 * @return QueryParser
+		 */
 		public QueryParser getParser()
 		{
 			return qp;
 		}
 	}
+	/**
+	 * Inner class to search a Lucene index
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class Search
 	{
+		/**
+		 * Search the index for the given query and return top n hits
+		 * @param query String Query to search 
+		 * @param n Integer Top hits for the query
+		 * @return TopDocs Top documents matching the query
+		 * @throws IOException
+		 * @throws ParseException
+		 */
 		public static TopDocs searchIndex(String query,int n)throws IOException,ParseException
 		{
 			Query q = qp.parse(query);
 			TopDocs tds = is.search(q, n);
 			return tds;
 		}
+		/**
+		 * Search the index for the given query and return top n hits
+		 * The query is a Boolean Query which may consist of one or more terms queries
+		 * @param query BooleanQuery Query to search
+		 * @param n Integer Top hits for the query
+		 * @return TopDocs Top documents matching the query
+		 * @throws IOException
+		 * @throws ParseException
+		 */
 		public static TopDocs searchIndex(BooleanQuery query,int n)throws IOException,ParseException
 		{
 			TopDocs tds = is.search(query, n);
 			return tds;
 		}
+		/**
+		 * Search the index for the given query in given field and return topmost hit
+		 * Use this to search an id or a phone number or another query which is not tokenized by lucene
+		 * @param field String Field to search 
+		 * @param query String Query to search
+		 * @return Document The top document matching the query
+		 * @throws IOException
+		 * @throws ParseException
+		 */
 		public static Document searchIndex(String field,String query)throws IOException,ParseException
 		{
 			Term term = new Term(field,query);
@@ -245,6 +384,15 @@ public class Index
 			Document d = is.doc(retDocs[0].doc);
 			return d;
 		}
+		/**
+		 * Search the index for the given query in given field and return topmost n hits
+		 * @param field String Field to search 
+		 * @param query String Query to search
+		 * @param n Integer Top hits for the query
+		 * @return HashMap<Document,Float> A Hash map of (document,score)
+		 * @throws IOException
+		 * @throws ParseException
+		 */
 		public static HashMap<Document, Float> searchIndex(String field,String query,int n)throws IOException,ParseException
 		{
 			HashMap<Document,Float> results = new HashMap<Document,Float>();
@@ -257,6 +405,10 @@ public class Index
 			return results;
 		}
 	}
+	/**
+	 * Get the index size
+	 * @return Integer Size of the index (number of documents)
+	 */
 	public static int getIndexSize()
 	{
 		return COUNT;

@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -36,35 +35,109 @@ import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
-
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
-
+/**
+ * Main class to query a lucene index
+ * @author Shubham Chatterjee
+ *
+ */
 public class Query 
 {
+	/**
+	 * Path to the index directory
+	 */
 	private static String INDEX_DIR ;
+	/**
+	 * Path to the output directory
+	 */
 	private static String OUTPUT_DIR ;
+	/**
+	 * Path to cbor outline file
+	 */
 	private static String CBOR_OUTLINE_FILE ;
+	/**
+	 * Name of the output file
+	 */
 	private static String OUT_FILE ;
+	/**
+	 * Path to the file containing the stopwords
+	 */
 	private static String STOP_FILE;
+	/**
+	 * Path to the word vector file
+	 */
 	private static String WORD_2_VEC_FILE;
+	/**
+	 * Method for query expansion
+	 * Can be: KNN or RM3 
+	 */
 	private static String QE_METHOD;
+	/**
+	 * Method for candidate set generation
+	 * Can be: BM25, LM-DS, LM-JM
+	 */
 	private static String CANDIDATE_SET_METHOD;
+	/**
+	 * Top search results for a query
+	 */
 	private static int TOP_SEARCH;
+	/**
+	 * Number of top documents to use for PRF
+	 */
 	private static int TOP_FEEDBACK;
+	/**
+	 * Number of top terms to consider for expansion
+	 */
 	private static int TOP_TERMS;
+	/**
+	 * List of pages in the corpus
+	 */
 	private static ArrayList<Data.Page> pagelist;
+	/**
+	 * List of paragraph IDs already seen
+	 * Used to prevent duplicate documents in the run file
+	 * Paragraph is added to the run file only if it is not already in this list
+	 */
 	private static ArrayList<String> paraID;
+	/**
+	 * HashMap of (word,vector)
+	 */
 	private static HashMap<String, ArrayList<Double>> word2vec;
 	private static IndexSearcher is;
 	private static Analyzer analyzer;
 	private static Similarity similarity;
 	private static List<String> tokens;
+	/**
+	 * List of stopwords
+	 * To be read from the stopwords file specified
+	 */
 	private static ArrayList<String> stopWords;
 	
+	/**
+	 * Inner class to search the lucene index for a query
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class Search
 	{
+		/**
+		 * Search a query 
+		 * @param dir
+		 * @param out_dir
+		 * @param outline_file
+		 * @param out_file
+		 * @param stopFilePath
+		 * @param word2vecFile
+		 * @param topSearch
+		 * @param topFeedback
+		 * @param topTerms
+		 * @param qe_method
+		 * @param cs_method
+		 * @param a
+		 * @param s
+		 */
 		public Search(String dir, String out_dir, String outline_file, String out_file, String stopFilePath, String word2vecFile ,int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s)
 		{
 			Query.INDEX_DIR = dir;
@@ -104,6 +177,9 @@ public class Query
 				e.printStackTrace();
 			}
 		}
+		/**
+		 * Get the word vectors from the file 
+		 */
 		private void getWordToVec() 
 		{
 			System.out.println("Getting word vectors");
@@ -139,6 +215,10 @@ public class Query
 			}
 			System.out.println("Done");
 		}
+		/**
+		 * Get the stop words from the file
+		 * @throws IOException
+		 */
 		public void getStopWords() throws IOException
 		{
 			String line;
@@ -147,31 +227,47 @@ public class Query
 				stopWords.add(line);
 			reader.close();
 		}
+		/**
+		 * Rank the paragraphs for the specified query string and create a run file
+		 * @param qString BooleanQuery Query to search in index
+		 * @param qID String ID of the Query
+		 * @param n Integer Top hits for the query
+		 * @throws IOException
+		 * @throws ParseException
+		 */
 		public void rankParas(BooleanQuery qString, String qID, int n) throws IOException, ParseException 
 		{
 			TopDocs tds = Index.Search.searchIndex(qString,n);
+			ScoreDoc[] retDocs = tds.scoreDocs;
 			String originalQuery = qString.toString("parabody");
 			String topTerms = "";
-			//System.out.println("original query:"+originalQuery);
 			if(QE_METHOD.equalsIgnoreCase("RM3"))
 			{
-				//System.out.println("Using RM3 for QE");
 				Query.RM3Expand ob = new Query.RM3Expand(tds, TOP_TERMS);
 				topTerms = ob.expand();
 			}
 			else if(QE_METHOD.equalsIgnoreCase("KNN"))
 			{
-				//System.out.println("Using KNN for QE");
 				Query.KNNExpand ob = new Query.KNNExpand(tds,TOP_TERMS);
 				topTerms = ob.expand(originalQuery);
 			}
-			//String topTerms = ob.expand(originalQuery);
-			BooleanQuery query = toQuery(originalQuery,topTerms);
-			TopDocs tds1 = Index.Search.searchIndex(query,n);
-			ScoreDoc[] retDocs1 = tds1.scoreDocs;
-			createRunFile(qID,tds1,retDocs1);
-			//System.out.println("Done:"+query.toString("parabody"));
+			if(topTerms != null)
+			{
+				BooleanQuery query = toQuery(originalQuery,topTerms);
+				TopDocs tds1 = Index.Search.searchIndex(query,n);
+				ScoreDoc[] retDocs1 = tds1.scoreDocs;
+				createRunFile(qID,tds1,retDocs1);
+			}
+			else
+				createRunFile(qID,tds,retDocs);
 		}
+		/**
+		 * Convert a query along with the top expansion terms to a boolean query
+		 * @param originalQuery String original query
+		 * @param topTerms String Top expansion terms
+		 * @return BooleanQuery A boolean query representing the terms in the original query as well as the expansion terms 
+		 * @throws IOException
+		 */
 		private BooleanQuery toQuery(String originalQuery, String topTerms) throws IOException
 		{
 			String newQuery = "";
@@ -191,6 +287,12 @@ public class Query
 			
 			return query.build();
 		}
+		/**
+		 * Get the terms from a query in the form of term queries
+		 * @param queryStr String Query whose terms are required
+		 * @return ArrayList<TermQuery> A list which containes the terms in the query as term queries
+		 * @throws IOException
+		 */
 		private ArrayList<TermQuery> getQueryTerms(String queryStr) throws IOException
 		{
 			ArrayList<TermQuery> terms = new ArrayList<TermQuery>();
@@ -211,6 +313,12 @@ public class Query
 	        }
 	        return terms;
 		}
+		/**
+		 * Convert a query along  to a boolean query
+		 * @param queryStr String  query
+		 * @return BooleanQuery A boolean query representing the terms in the original query
+		 * @throws IOException
+		 */
 		public BooleanQuery toQuery(String queryStr) throws IOException 
 		{
 
@@ -231,6 +339,14 @@ public class Query
 	        }
 	        return booleanQuery.build();
 	    }
+		/**
+		 * Create a run file 
+		 * Run file string format: $queryId Q0 $paragraphId $rank $score $name
+		 * @param queryID String ID of the query
+		 * @param tds TopDocs Top hits for the query
+		 * @param retDocs ScoreDoc[] Scores of the top hits
+		 * @throws IOException
+		 */
 		private void createRunFile(String queryID, TopDocs tds, ScoreDoc[] retDocs)throws IOException
 		{
 			ArrayList<String> runStrings = new ArrayList<String>();
@@ -242,8 +358,6 @@ public class Query
 			{
 				d = is.doc(retDocs[i].doc);
 				String pID = d.getField("paraid").stringValue();
-				
-				/*runFile string format: $queryId Q0 $paragraphId $rank $score $name*/
 				
 				runFileString = queryID+" Q0 "+pID+" "+i+" "+tds.scoreDocs[i].score+" "+CANDIDATE_SET_METHOD+"+"+QE_METHOD;
 				if(!paraID.contains(pID))
@@ -258,6 +372,11 @@ public class Query
 				fw.write(runString+"\n");
 			fw.close();
 		}	
+		/**
+		 * Get the list of pages 
+		 * @param path String Path to the outlines file
+		 * @return ArrayList<Data.page> List containing the Pages
+		 */
 		private ArrayList<Data.Page> getPageListFromPath(String path)
 		{
 			ArrayList<Data.Page> pageList = new ArrayList<Data.Page>();
@@ -301,6 +420,9 @@ public class Query
 			System.exit(0);
 			}
 		}
+		/**
+		 * Search the top level section names as queries
+		 */
 		public void searchTopLevelSections()
 		{
 			String qString,qID;
@@ -309,7 +431,6 @@ public class Query
 			{
 				for(Data.Page page:pagelist)
 				{	
-					//System.out.println("Page:"+page.getPageName());
 					qString = page.getPageName();
 					query = toQuery(qString);
 					qID = page.getPageId();
@@ -322,7 +443,6 @@ public class Query
 		                qID = page.getPageId()+"/"+child.getHeadingId();
 		                rankParas(query,qID, TOP_SEARCH);
 					}
-					//System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
 					System.out.println("Done page:"+page.getPageName());
 				}
 			} 
@@ -331,6 +451,9 @@ public class Query
 				e.printStackTrace();
 			}
 		}
+		/**
+		 * Search the page titles as queries
+		 */
 		public void searchPageTitles()
 		{
 			try
@@ -341,7 +464,6 @@ public class Query
 					BooleanQuery query = toQuery(qString);
 					String qID = page.getPageId();
 					rankParas(query,qID, TOP_SEARCH);
-					//System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
 					System.out.println("Done page:"+page.getPageName());
 				}
 			}
@@ -350,6 +472,9 @@ public class Query
 				e.printStackTrace();
 			}
 		}
+		/**
+		 * Search the section headings as queries
+		 */
 		public void searchSectionHeadings()
 		{
 			try
@@ -373,13 +498,38 @@ public class Query
 			}
 		}
 	}
+	/**
+	 * Inner class for Query Expansion
+	 * This is a superclass representning general Query Expansion techniques
+	 * Subclasses must implement specific query expansion methods and define their own methods
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public static class Expand
 	{
+		/**
+		 * Top documents to be used to PRF
+		 */
 		protected TopDocs topDocs;
+		/**
+		 * Score of the top documents
+		 */
 		protected ScoreDoc[] scores;
+		/**
+		 * All words in the top documents
+		 */
 		protected ArrayList<String> words;
+		/**
+		 * Preprocessed words from the top documents
+		 * Preprocess means: lowercase and remove stop words
+		 */
 		protected ArrayList<String> processedWords;
 		
+		/**
+		 * Expand the query using these top documents for PRF
+		 * @param tds TopDocs Top documents for PRF
+		 * @throws IOException
+		 */
 		public Expand(TopDocs tds) throws IOException
 		{
 			topDocs = tds;
@@ -388,6 +538,11 @@ public class Query
 			Preprocess p = new Preprocess(words);
 			processedWords = p.getProcessedText();
 		}
+		/**
+		 * Get all the words in the vocabulary of these top documents
+		 * @return ArrayList<String> List of words
+		 * @throws IOException
+		 */
 		private ArrayList<String> getAllWords() throws IOException
 		{
 			ArrayList<String> words = new ArrayList<String>();
@@ -401,6 +556,13 @@ public class Query
 			}
 			return words;
 		}
+		/**
+		 * Get the top k words in the vocabulary for expansion
+		 * @param map Map of (word,score) where score is the score of the word for expansion
+		 * @param k Top number of words for expansion
+		 * @return String Top words concatenated into a string
+		 * @throws IOException
+		 */
 		protected String getTopWords(Map<String, Float> map, int k) throws IOException
 		{
 			Map<String, Float>  sortedMap = new LinkedHashMap<String,Float>();
@@ -422,6 +584,11 @@ public class Query
 		    return topTerms;
 			
 		}
+		/**
+		 * Class to sort a Map based on the values in descending order
+		 * @author Shubham Chatterjee
+		 *
+		 */
 		private class CustomizedHashMap implements Comparator<Map.Entry<String, Float>> 
 		{
 
@@ -433,14 +600,34 @@ public class Query
 
 		}
 	}
+	/**
+	 * Inner class to implement Query Expansion using RM3
+	 * This is a subclass of Expansion
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class RM3Expand extends Expand
 	{
+		/**
+		 * Top expansion terms
+		 */
 		private int TOP;
+		/**
+		 * Expand the query using RM3
+		 * @param tds TopDocs Top documents for PRF
+		 * @param top Integer Top terms for expansion
+		 * @throws IOException
+		 */
 		public RM3Expand(TopDocs tds, int top) throws IOException
 		{
 			super(tds);
 			TOP = top;
 		}
+		/**
+		 * Get the sum of scores of the documents
+		 * This method uses the log-exp trick to prevent underflow or overflow
+		 * @return Float Sum of scores of documents
+		 */
 		private float getSumOfScores()
 		{
 			float max = getMaxScore();
@@ -450,6 +637,10 @@ public class Query
 			s = (float) (max + Math.log(s));
 			return s;
 		}
+		/**
+		 * Get the maximum score among all documents
+		 * @return Float Maximum document score
+		 */
 		private float getMaxScore()
 		{
 			float max = topDocs.scoreDocs[0].score;
@@ -460,11 +651,22 @@ public class Query
 			}
 			return max;
 		}
+		/**
+		 * Probabilty of document given query
+		 * @param doc Integer Document number
+		 * @return Float 
+		 */
 		private float prob_D_given_Q(int doc)
 		{
 			float sum = getSumOfScores();;
 			return ( topDocs.scoreDocs[doc].score / sum );
 		}
+		/**
+		 * probability of word given the document
+		 * @param word String
+		 * @param text String Document text
+		 * @return Float
+		 */
 		private float prob_W_given_D(String word, String text)
 		{
 			int numOfWords = findNumOfWords(text);
@@ -472,10 +674,21 @@ public class Query
 			
 			return (float)freqOfWord / numOfWords;
 		}
+		/**
+		 * Get number of words in the document
+		 * @param text String Document text
+		 * @return Integer Number of words in the document
+		 */
 		private int findNumOfWords(String text)
 		{
 			return text.split(" ").length;
 		}
+		/**
+		 * Find the ferquency of the word in the document
+		 * @param word String
+		 * @param text String 
+		 * @return Integer
+		 */
 		private int findFreqOfWord(String word, String text)
 		{
 			String[] words = text.split(" ");
@@ -485,6 +698,11 @@ public class Query
 					count++;
 			return count;
 		}
+		/**
+		 * Exapnd the query using RM3
+		 * @return String Top expansion terms concateneted into a string
+		 * @throws IOException
+		 */
 		public String expand() throws IOException
 		{
 			Document d;
@@ -512,15 +730,35 @@ public class Query
 			return topTerms;
 		}
 	}
+	/**
+	 * Inner class for Query Expansion using KNN
+	 * Subclass of Expansion
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class KNNExpand extends Expand
 	{
+		/**
+		 * Value of K in KNN
+		 */
 		private int K;
-		
+		/**
+		 * Expand the query using KNN
+		 * @param tds TopDocs Top documents for PRF
+		 * @param k Integer Value of K in KNN
+		 * @throws IOException
+		 */
 		public KNNExpand(TopDocs tds,int k) throws IOException
 		{
 			super(tds);
 			K = k;
 		}
+		/**
+		 * Expand the query
+		 * @param query String Query to expand
+		 * @return String Top expansion terms concateneted into a string
+		 * @throws IOException
+		 */
 		public String expand(String query) throws IOException
 		{
 			String[] qTerms = query.split(" ");
@@ -530,19 +768,30 @@ public class Query
 			float sum = 0.0f;
 			String topTerms;
 			
-			for(String t : candidateMap.keySet())
+			if(candidateMap != null) 
 			{
-				ArrayList<Double> vector = candidateMap.get(t);
-				for(String q : queryVectorMap.keySet())
+				for(String t : candidateMap.keySet())
 				{
-					if(vector != null && queryVectorMap.get(q) != null)
-						sum += findSimilarity(vector, queryVectorMap.get(q));
+					ArrayList<Double> vector = candidateMap.get(t);
+					for(String q : queryVectorMap.keySet())
+					{
+						if(vector != null && queryVectorMap.get(q) != null)
+							sum += findSimilarity(vector, queryVectorMap.get(q));
+					}
+					scores.put(t, (sum / qTerms.length));
 				}
-				scores.put(t, (sum / qTerms.length));
+				topTerms = getTopWords(scores, K);
+				return topTerms;
 			}
-			topTerms = getTopWords(scores, K);
-			return topTerms;
+			else
+				return null;
 		}
+		/**
+		 * Find the similarity between two vectors
+		 * @param vec1 ArrayList<Double> First vector
+		 * @param vec2 ArrayList<Double> Second vector
+		 * @return Double cosine similarity between the two vectors
+		 */
 		private double findSimilarity(ArrayList<Double> vec1, ArrayList<Double> vec2)
 		{
 			if(vec1.size() != vec2.size())
@@ -560,6 +809,11 @@ public class Query
 			score = numerator / denominator;
 			return score;
 		}
+		/**
+		 * Find the L1 norm of the given vector
+		 * @param vector ArrayList<Double> Vector to find norm
+		 * @return Double L1 norm of the vector
+		 */
 		private double getNorm(ArrayList<Double> vector)
 		{
 			double norm = 0.0d;
@@ -570,6 +824,11 @@ public class Query
 			norm = Math.sqrt(norm);
 			return norm;
 		}
+		/**
+		 * Get the word vectors for every word in the query
+		 * @param terms String[] Query terms
+		 * @return LinkedHashMap<String,ArrayList<Double>> HashMap of (word,vector)
+		 */
 		private LinkedHashMap<String,ArrayList<Double>> getQueryVector(String[] terms)
 		{
 			LinkedHashMap<String,ArrayList<Double>> queryVectorMap = new LinkedHashMap<String,ArrayList<Double>>();
@@ -577,6 +836,11 @@ public class Query
 				queryVectorMap.put(s, word2vec.get(s));
 			return queryVectorMap;
 		}
+		/**
+		 * Get the candidate set of words in the query to consider for expansion
+		 * @param terms String[] Query terms
+		 * @return LinkedHashMap<String,ArrayList<Double>> HashMap of (word,vector)
+		 */
 		private LinkedHashMap<String,ArrayList<Double>> getCandidateSet(String[] terms)
 		{
 			LinkedHashMap<String,ArrayList<Double>> candidateMap = new LinkedHashMap<String,ArrayList<Double>>();
@@ -593,6 +857,11 @@ public class Query
 				return candidateMap;
 			return null;
 		}
+		/**
+		 * Get the nearest neighbours of a term in embedding space
+		 * @param s String Term to get nearest neighbour
+		 * @return LinkedHashMap<String,ArrayList<Double>> HashMap of (word,vector) which are nearest to given term
+		 */
 		private LinkedHashMap<String,ArrayList<Double>> getNearestNeighbours(String s)
 		{
 			HashMap<String, Double> distanceMap = new HashMap<String, Double>();
@@ -630,6 +899,12 @@ public class Query
 			else
 			return null;
 		}
+		/**
+		 * Get distance between two vectors
+		 * @param vec1 ArrayList<Double> First vector
+		 * @param vec2 ArrayList<Double> Second vector
+		 * @return Double distance between the two vectors
+		 */
 		private double getDistance(ArrayList<Double> vec1, ArrayList<Double> vec2)
 		{
 			if(vec1.size() != vec2.size())
@@ -656,9 +931,20 @@ public class Query
 
 		}
 	}
+	/**
+	 * Inner class to pre-process the data 
+	 * @author Shubham Chatterjee
+	 *
+	 */
 	public final static class Preprocess
 	{
+		/**
+		 * Hold the preprocessed words
+		 */
 		private ArrayList<String> processedWords;
+		/**
+		 * Holds the original words
+		 */
 		private ArrayList<String> words;
 		
 		public Preprocess(ArrayList<String> text)
@@ -666,6 +952,11 @@ public class Query
 			words = lowerCaseWords(text);
 			processedWords = removeStopWords(words);
 		}
+		/**
+		 * Lowercase the words
+		 * @param words ArrayList<String> Words to lowercase
+		 * @return ArrayList<String> Lowercased words
+		 */
 		private ArrayList<String> lowerCaseWords(ArrayList<String> words)
 		{
 			ArrayList<String> newWords = new ArrayList<String>();
@@ -673,6 +964,11 @@ public class Query
 				newWords.add(s.replaceAll("[^a-zA-Z ]", "").toLowerCase());
 			return newWords;
 		}
+		/**
+		 * Remove stop words from the list
+		 * @param words ArrayList<String> Words from which stopwords are to be removed
+		 * @return ArrayList<String>
+		 */
 		private ArrayList<String> removeStopWords(ArrayList<String> words)
 		{
 			ArrayList<String> newWords = new ArrayList<String>();
@@ -681,6 +977,10 @@ public class Query
 					newWords.add(s);
 			return newWords;
 		}
+		/**
+		 * Get the preprocessed text
+		 * @return ArrayList<String>
+		 */
 		public ArrayList<String> getProcessedText()
 		{
 			return processedWords;
@@ -725,8 +1025,8 @@ public class Query
 			System.exit(0);
 		}
 		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, word2vecFile, topSearch, topFeedback, topTerms, qe_method, cs_method, new StandardAnalyzer(), sim);
-		ob.searchTopLevelSections();
-		//ob.searchPageTitles();
+		//ob.searchTopLevelSections();
+		ob.searchPageTitles();
 	}
 }
 

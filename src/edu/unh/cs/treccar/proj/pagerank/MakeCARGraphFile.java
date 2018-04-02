@@ -13,7 +13,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import edu.unh.cs.treccar.proj.qe.Index;
-
+/**
+ * Class to make a CAR graph with paragraphs as nodes and entities as edges
+ * @author Shubham Chatterjee
+ *
+ */
 
 public class MakeCARGraphFile 
 {
@@ -45,7 +49,6 @@ public class MakeCARGraphFile
 		private void getDocumentList() throws IOException, ParseException
 		{
 			BufferedReader reader = new BufferedReader(new FileReader(paraRunFilePath));
-			//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			String line, query;
 			Document d;
 			while((line = reader.readLine()) != null)	
@@ -54,7 +57,6 @@ public class MakeCARGraphFile
 				d = Index.Search.searchIndex("paraid", query);
 				System.out.println("QueryID="+query);
 				System.out.println("Got="+d.getField("paraid").stringValue());
-				//br.readLine();
 				documents.add(d);
 			}
 			reader.close();
@@ -69,7 +71,6 @@ public class MakeCARGraphFile
 		public void makeGraphFile()throws IOException, ParseException
 		{
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File((filePath))));
-			//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			for(Document d1 : documents)
 			{
 				String[] entity1 = d1.getField("paraentity").stringValue().split(" ");
@@ -82,15 +83,12 @@ public class MakeCARGraphFile
 					String[] entity2 = d2.getField("paraentity").stringValue().split(" ");
 					String[] nentity2 = clean(entity2);
 					ArrayList<String> list2 = new ArrayList<String>(Arrays.asList(nentity2));
-					//System.out.println("para2="+d2.getField("paraid").stringValue());
 					if(isCommon(list1,list2))
 					{
 						System.out.println("Found an edge");
 						System.out.println("para2="+d2.getField("paraid").stringValue());
-						//System.out.println("neighbour="+neighbour);
 						neighbour = neighbour + " "+d2.getField("paraid").stringValue();
 						System.out.println("neighbour="+neighbour);
-						//br.readLine();
 					}
 				}
 				writer.write(neighbour+"\n");
