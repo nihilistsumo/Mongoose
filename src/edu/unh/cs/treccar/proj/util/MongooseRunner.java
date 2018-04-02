@@ -102,7 +102,7 @@ public class MongooseRunner {
 				}
 				else if(cmd.equalsIgnoreCase("prc")){
 					mh.runPRC(prop.getProperty("out-dir")+"/"+prop.getProperty("cluster-out"), prop.getProperty("index-dir"), 
-							prop.getProperty("curl-path"));
+							prop.getProperty("curl-path"), prop.getProperty("out-dir")+"/"+prop.getProperty("paramap-run"));
 				}
 			}
 		} catch (IOException | ParseException | ClassNotFoundException e) {

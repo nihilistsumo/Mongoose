@@ -131,11 +131,12 @@ public class PageRankClusters {
 		return 0.0;
 	}
 	
-	public void prWithClusters(String clFilePath, String indexDir, String curlScriptPath) throws IOException, ParseException {
+	public void prWithClusters(String clFilePath, String indexDir, String curlScriptPath, String runfilePath) throws IOException, ParseException {
 		
 		System.setProperty("file.encoding","UTF-8");
 		
 		// Check command line argument
+		
 		
 		String index_path = indexDir;
 		IndexSearcher searcher = setUpIndexSearcher(index_path, "paragraph.lucene");
@@ -228,6 +229,47 @@ public class PageRankClusters {
 		out2.writeObject(ranked_data_common_words);
 		out2.close();
 		fileOut2.close();
+		
+		// FileWriter fw = new FileWriter("paramap-top-kmeans-train-pr.run", true);
+		FileWriter fw = new FileWriter("paramap-top-kmeans-train-prcw.run", true);
+		System.out.println("Writing run file..");
+		count = 0;
+		try {
+			String runFile = runfilePath;
+			String line = null;
+			FileReader fr = new FileReader(runFile);
+			BufferedReader br = new BufferedReader(fr);
+			while ((line = br.readLine()) != null) {
+				String[] splits = line.split(" ");
+				String pgID = splits[0]; 
+				String paraID = splits[2];
+				String cluster_score = splits[4];
+
+				double c_score = Double.parseDouble(cluster_score);
+				double new_score = getPRDBScore(paraID) * c_score;
+				// double new_score = getPRCWScore(paraID) * c_score;
+
+				String final_string = pgID + " Q0 " + paraID + " 0 " + new_score + " TOP\n";
+				fw.write(final_string);
+				
+				if (count % 50 == 0)
+					System.out.println();
+				System.out.print(".");
+				count++;
+			}
+			
+			br.close();
+			fw.close();
+		}
+		
+		catch(FileNotFoundException e) {
+			System.out.println("Unable to open file...");
+		}
+		
+		catch(IOException e) {
+			System.out.println("Error reading file...");
+		}
+		System.out.println("Done..");
 	}
 	
 	public static void main(String[] args) throws IOException, ParseException {

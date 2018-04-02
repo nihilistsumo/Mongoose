@@ -84,10 +84,10 @@ public class MongooseHelper {
 		System.out.println("Thread pool size "+this.nThreads);
 	}
 	
-	public void runPRC(String clFilePath, String indexDir, String curlScriptPath){
+	public void runPRC(String clFilePath, String indexDir, String curlScriptPath, String runfilePath){
 		PageRankClusters prc = new PageRankClusters();
 		try {
-			prc.prWithClusters(clFilePath, indexDir, curlScriptPath);
+			prc.prWithClusters(clFilePath, indexDir, curlScriptPath, runfilePath);
 		} catch (IOException | org.json.simple.parser.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
