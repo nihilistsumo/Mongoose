@@ -26,7 +26,7 @@ chmod 755 run.sh
 
 5. Run Mongoose (with default options):
 ```
-java -jar target/target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Usage
