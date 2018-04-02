@@ -250,7 +250,7 @@ public class MongooseHelper {
 		oos.close();
 	}
 	
-	private double[] getWeightVecFromRlibModel(String modelFilePath) throws IOException{
+	public double[] getWeightVecFromRlibModel(String modelFilePath) throws IOException{
 		double[] weightVec;
 		BufferedReader br = new BufferedReader(new FileReader(new File(modelFilePath)));
 		String line = br.readLine();
