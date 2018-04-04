@@ -283,6 +283,7 @@ public class DataUtilities {
 			for(int i=0; pageIt.hasNext(); i++){
 				Data.Page page = pageIt.next();
 				ArrayList<String> secIDsInPage = new ArrayList<String>();
+				secIDsInPage.add(page.getPageId());
 				for(Data.Section sec:page.getChildSections())
 					secIDsInPage.add(page.getPageId()+"/"+sec.getHeadingId());
 				articleSecMap.put(page.getPageId(), secIDsInPage);
@@ -301,6 +302,7 @@ public class DataUtilities {
 			for(int i=0; pageIt.hasNext(); i++){
 				Data.Page page = pageIt.next();
 				ArrayList<String> secIDsInPage = new ArrayList<String>();
+				secIDsInPage.add(page.getPageId());
 				for(Data.Section sec:getAllSections(page))
 					secIDsInPage.add(page.getPageId()+"/"+sec.getHeadingId());
 				articleSecMap.put(page.getPageId(), secIDsInPage);
