@@ -44,7 +44,7 @@ public class Word2VecMapper {
 					p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
 			
 			HashMap<String, double[]> tokenVecMap = DataUtilities.readGloveFile(p);
-			HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(
+			HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(
 					p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 			int vecSize = tokenVecMap.entrySet().iterator().next().getValue().length;
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("paramap-run"))));

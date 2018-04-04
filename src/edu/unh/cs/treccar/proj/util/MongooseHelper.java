@@ -139,7 +139,7 @@ public class MongooseHelper {
 	
 	public void runKMeansW2VClustering() throws IOException, ParseException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
-		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(
 				p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		
 		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
@@ -181,7 +181,7 @@ public class MongooseHelper {
 	public void runHACSimClustering() throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
 				new File(p.getProperty("out-dir")+"/"+p.getProperty("sim-data-out"))));
 		HashMap<String, ArrayList<ParaPairData>> similarityData = (HashMap<String, ArrayList<ParaPairData>>) ois.readObject();
@@ -216,7 +216,7 @@ public class MongooseHelper {
 	public void runHACW2VClustering() throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleToplevelSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
+		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		/*
 		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
 				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
@@ -386,7 +386,7 @@ public class MongooseHelper {
 		HashMap<String, ArrayList<ArrayList<String>>> dataCl;
 		try {
 			this.p.load(new FileInputStream(new File("project.properties")));
-			HashMap<String, ArrayList<String>> trainSec = DataUtilities.getArticleToplevelSecMap(this.p.getProperty("data-dir")+"/"+this.p.getProperty("outline"));
+			HashMap<String, ArrayList<String>> trainSec = DataUtilities.getArticleSecMap(this.p.getProperty("data-dir")+"/"+this.p.getProperty("outline"));
 			ObjectInputStream ois = new ObjectInputStream(
 					new FileInputStream(new File(this.p.getProperty("out-dir")+"/"+this.p.getProperty("cluster-out"))));
 			dataCl = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
