@@ -241,7 +241,7 @@ public class LuceneRanker {
 								sec.toLowerCase().replaceAll("/", " ").replaceAll("%20", " ").replaceAll("enwiki:", "")));
 					} catch (ParseException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						e.printStackTrace(); 
 					}
 			}
 			FileInputStream fis = new FileInputStream(new File(CBOR_OUTLINE_FILE));
