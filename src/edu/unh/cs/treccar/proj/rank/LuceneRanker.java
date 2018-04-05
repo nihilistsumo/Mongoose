@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -35,6 +37,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import co.nstant.in.cbor.CborException;
+import edu.unh.cs.treccar.proj.util.DataUtilities;
+import edu.unh.cs.treccar.proj.util.MapUtil;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
@@ -106,55 +110,115 @@ public class LuceneRanker {
 		paradoc.add(new TextField("parabody", para.getTextOnly(), Field.Store.YES));
 		iw.addDocument(paradoc);
 	}
-
-	private HashMap<String, Float> doSearch(String qstring, int n) throws IOException, ParseException {
+	
+	private HashMap<String, Float> doSearch(Query q, int n) throws ParseException {
 		HashMap<String, Float> retrievedResult = new HashMap<String, Float>();
-		Query q;
-		TopDocs tds;
-		ScoreDoc[] retDocs;
-		Document d;
-		if (is == null) {
-			is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(INDEX_DIR).toPath()))));
-			// here you set the similarity for the searcher
-			is.setSimilarity(new BM25Similarity());
+		try {
+			TopDocs tds;
+			ScoreDoc[] retDocs;
+			Document d;
+			if (is == null) {
+				is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(INDEX_DIR).toPath()))));
+				// here you set the similarity for the searcher
+				is.setSimilarity(new BM25Similarity());
+			}
+
+			if (customScore) {
+				SimilarityBase mySimiliarity = new SimilarityBase() {
+					protected float score(BasicStats stats, float freq, float docLen) {
+						return freq;
+					}
+
+					@Override
+					public String toString() {
+						return null;
+					}
+				};
+				is.setSimilarity(mySimiliarity);
+			}
+
+			/*
+			 * The first arg of QueryParser constructor specifies which field of document to
+			 * match with query, here we want to search in the para text, so we chose
+			 * parabody.
+			 * 
+			 */
+			if (qp == null) {
+				qp = new QueryParser("parabody", new StandardAnalyzer());
+			}
+
+			//System.out.println("Query: " + q.toString());
+			tds = is.search(q, n);
+			retDocs = tds.scoreDocs;
+			
+			for (int i = 0; i < retDocs.length; i++) {
+				d = is.doc(retDocs[i].doc);
+				//System.out.println("Doc " + i);
+				//System.out.println("Score " + tds.scoreDocs[i].score);
+				//System.out.println(d.getField("paraid").stringValue());
+				//System.out.println(d.getField("parabody").stringValue() + "\n");
+				retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return retrievedResult;
+	}
 
-		if (customScore) {
-			SimilarityBase mySimiliarity = new SimilarityBase() {
-				protected float score(BasicStats stats, float freq, float docLen) {
-					return freq;
-				}
+	private HashMap<String, Float> doSearch(String qstring, int n) {
+		HashMap<String, Float> retrievedResult = new HashMap<String, Float>();
+		try {
+			Query q;
+			TopDocs tds;
+			ScoreDoc[] retDocs;
+			Document d;
+			if (is == null) {
+				is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(INDEX_DIR).toPath()))));
+				// here you set the similarity for the searcher
+				is.setSimilarity(new BM25Similarity());
+			}
 
-				@Override
-				public String toString() {
-					return null;
-				}
-			};
-			is.setSimilarity(mySimiliarity);
-		}
+			if (customScore) {
+				SimilarityBase mySimiliarity = new SimilarityBase() {
+					protected float score(BasicStats stats, float freq, float docLen) {
+						return freq;
+					}
 
-		/*
-		 * The first arg of QueryParser constructor specifies which field of document to
-		 * match with query, here we want to search in the para text, so we chose
-		 * parabody.
-		 * 
-		 */
-		if (qp == null) {
-			qp = new QueryParser("parabody", new StandardAnalyzer());
-		}
+					@Override
+					public String toString() {
+						return null;
+					}
+				};
+				is.setSimilarity(mySimiliarity);
+			}
 
-		System.out.println("Query: " + qstring);
-		q = qp.parse(qstring);
-		tds = is.search(q, n);
-		retDocs = tds.scoreDocs;
-		
-		for (int i = 0; i < retDocs.length; i++) {
-			d = is.doc(retDocs[i].doc);
-			//System.out.println("Doc " + i);
-			//System.out.println("Score " + tds.scoreDocs[i].score);
-			//System.out.println(d.getField("paraid").stringValue());
-			//System.out.println(d.getField("parabody").stringValue() + "\n");
-			retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
+			/*
+			 * The first arg of QueryParser constructor specifies which field of document to
+			 * match with query, here we want to search in the para text, so we chose
+			 * parabody.
+			 * 
+			 */
+			if (qp == null) {
+				qp = new QueryParser("parabody", new StandardAnalyzer());
+			}
+
+			//System.out.println("Query: " + qstring);
+			q = qp.parse(qstring);
+			tds = is.search(q, n);
+			retDocs = tds.scoreDocs;
+			
+			for (int i = 0; i < retDocs.length; i++) {
+				d = is.doc(retDocs[i].doc);
+				//System.out.println("Doc " + i);
+				//System.out.println("Score " + tds.scoreDocs[i].score);
+				//System.out.println(d.getField("paraid").stringValue());
+				//System.out.println(d.getField("parabody").stringValue() + "\n");
+				retrievedResult.put(d.getField("paraid").stringValue(), tds.scoreDocs[i].score);
+			}
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return retrievedResult;
 	}
@@ -165,28 +229,66 @@ public class LuceneRanker {
 	
 	private void searchPages(){
 		try {
+			HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(CBOR_OUTLINE_FILE);
+			HashMap<String, ArrayList<Query>> pageSecQueryMap = new HashMap<String, ArrayList<Query>>();
+			QueryParser parser = new QueryParser("parabody", new StandardAnalyzer());
+			for(String page:pageSecMap.keySet()){
+				ArrayList<Query> queryList = new ArrayList<Query>();
+				pageSecQueryMap.put(page, queryList);
+				for(String sec:pageSecMap.get(page))
+					try {
+						pageSecQueryMap.get(page).add(parser.parse(
+								sec.toLowerCase().replaceAll("/", " ").replaceAll("%20", " ").replaceAll("enwiki:", "")));
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}
 			FileInputStream fis = new FileInputStream(new File(CBOR_OUTLINE_FILE));
 			HashMap<String, HashMap<String, Float>> resultSet = new HashMap<String, HashMap<String,Float>>();
-			final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis);
-			for(int i=0; pageIt.hasNext(); i++){
-				Data.Page page = pageIt.next();
+			StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> {
+			//for(int i=0; pageIt.hasNext(); i++){
+				//Data.Page page = pageIt.next();
 				//List<List<Data.Section>> paths = page.flatSectionPaths();
-				HashSet<String> allSecIDsInPage = getAllSectionIDs(page);
-				String pageQ = page.getPageName();
-				for(String secid:allSecIDsInPage)
-					pageQ = pageQ + "/" + secid;
-				pageQ = pageQ.replaceAll("[/,%20]", " ").replaceAll("enwiki:", "");
-				HashMap<String, Float> result = this.doSearch(page.getPageName(), RET_NO);
-				resultSet.put(page.getPageId(), result);
-			}
+				//HashSet<String> allSecIDsInPage = getAllSectionIDs(page);
+				Map<String, Float> paraRanks = new HashMap<String, Float>();
+				for(Query query:pageSecQueryMap.get(page)){
+				//for(String secID:pageSecMap.get(page)){
+					//String query = secID.toLowerCase().replaceAll("/", " ").replaceAll("%20", " ").replaceAll("enwiki:", "");
+					try {
+						HashMap<String, Float> result = this.doSearch(query, RET_NO);
+						for(String p:result.keySet()){
+							if(paraRanks.keySet().contains(p))
+								paraRanks.put(p, paraRanks.get(p)+result.get(p));
+							else
+								paraRanks.put(p, result.get(p));
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+				paraRanks = MapUtil.sortByValue(paraRanks);
+				HashMap<String, Float> finalParaRanks = new HashMap<String, Float>();
+				int c=1;
+				for(Map.Entry<String, Float> ps:paraRanks.entrySet()){
+					finalParaRanks.put(ps.getKey(), ps.getValue());
+					c++;
+					if(c>=RET_NO)
+						break;
+				}
+				resultSet.put(page, finalParaRanks);
+				System.out.println(page+" done");
+			});
 			this.printTrecevalRun(resultSet, "PAGE", this.runFileWriter);
-		} catch (IOException | ParseException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	private void searchSections(){
+	private void searchSections() throws ParseException{
 		try {
 			FileInputStream fis = new FileInputStream(new File(CBOR_OUTLINE_FILE));
 			HashMap<String, HashMap<String, Float>> resultSet = new HashMap<String, HashMap<String,Float>>();
@@ -205,7 +307,7 @@ public class LuceneRanker {
 				}
 			}
 			this.printTrecevalRun(resultSet, "SECTION", this.runFileWriter);
-		} catch (IOException | ParseException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
