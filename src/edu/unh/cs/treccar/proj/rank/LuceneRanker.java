@@ -94,21 +94,38 @@ public class LuceneRanker {
 		
 		FileInputStream fis = new FileInputStream(new File(CBOR_PARA_FILE));
 		final Iterator<Data.Paragraph> paragraphIterator = DeserializeData.iterParagraphs(fis);
+		final Iterable<Data.Paragraph> it = ()->paragraphIterator;
+		int i=0;
+		/*
 		for (int i=1; paragraphIterator.hasNext(); i++) {
 			Data.Paragraph p = paragraphIterator.next();
 			this.indexPara(iw, p);
-			System.out.println(p.getParaId());
+			//System.out.println(p.getParaId());
+			if(i%1000==0)
+				System.out.println(i+" paragraphs indexed");
 		}
+		*/
+		StreamSupport.stream(it.spliterator(), true).forEach(p->{
+			try {
+				this.indexPara(iw, p, i);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 		iw.close();
 		
 		System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
 	}
 
-	private void indexPara(IndexWriter iw, Data.Paragraph para) throws IOException {
+	private void indexPara(IndexWriter iw, Data.Paragraph para, int count) throws IOException {
 		Document paradoc = new Document();
 		paradoc.add(new StringField("paraid", para.getParaId(), Field.Store.YES));
-		paradoc.add(new TextField("parabody", para.getTextOnly(), Field.Store.YES));
+		paradoc.add(new TextField("parabody", para.getTextOnly().toLowerCase(), Field.Store.YES));
 		iw.addDocument(paradoc);
+		count++;
+		if(count%1000==0)
+			System.out.println(count+" paragraphs indexed");
 	}
 	
 	private HashMap<String, Float> doSearch(Query q, int n) throws ParseException {
