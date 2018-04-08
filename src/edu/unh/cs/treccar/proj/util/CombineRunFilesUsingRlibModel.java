@@ -10,9 +10,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 
 public class CombineRunFilesUsingRlibModel {
+	
+	public static final int RET_PARA_NO_IN_COMBINED = 200;
 	
 	public void writeRunFile(Properties p) throws IOException{
 		String[] runfiles = p.getProperty("runfile-list").split(" ");
@@ -39,7 +42,9 @@ public class CombineRunFilesUsingRlibModel {
 		for(int i=1; i<runfileObjList.size(); i++){
 			intersection.retainAll(runfileObjList.get(i).keySet());
 		}
+		HashMap<String, HashMap<String, Double>> combinedRunfile = new HashMap<String, HashMap<String, Double>>();
 		for(String q:intersection){
+			Map<String, Double> paraScores = new HashMap<String, Double>();
 			HashSet<String> paras = new HashSet<String>();
 			paras.addAll(runfileObjList.get(0).get(q).keySet());
 			for(int i=1; i<runfileObjList.size(); i++)
@@ -52,8 +57,14 @@ public class CombineRunFilesUsingRlibModel {
 					if(runfileObjList.get(r).get(q).containsKey(para))
 						combinedScore+=runfileObjList.get(r).get(q).get(para)*optW[r];
 				}
-				bw.write(q+" Q0 "+para+" 0 "+combinedScore+" COMBINED\n");
+				paraScores.put(para, combinedScore);
+				//bw.write(q+" Q0 "+para+" 0 "+combinedScore+" COMBINED\n");
 			}
+			combinedRunfile.put(q, (HashMap<String, Double>)MapUtil.sortByValue(paraScores, RET_PARA_NO_IN_COMBINED));
+		}
+		for(String q:combinedRunfile.keySet()) {
+			for(String para:combinedRunfile.get(q).keySet())
+				bw.write(q+" Q0 "+para+" 0 "+combinedRunfile.get(q).get(para)+" COMBINED\n");
 		}
 		bw.close();
 	}
@@ -65,22 +76,17 @@ public class CombineRunFilesUsingRlibModel {
 		String q,p,s;
 		while(line!=null){
 			q = line.split(" ")[0];
-			if(!q.contains("/")){
-				line = br.readLine();
+			p = line.split(" ")[2];
+			s = line.split(" ")[4];
+			if(rfObj.keySet().contains(q)){
+				rfObj.get(q).put(p, Double.parseDouble(s));
 			}
 			else{
-				p = line.split(" ")[2];
-				s = line.split(" ")[4];
-				if(rfObj.keySet().contains(q)){
-					rfObj.get(q).put(p, Double.parseDouble(s));
-				}
-				else{
-					HashMap<String, Double> psmap = new HashMap<String, Double>();
-					psmap.put(p, Double.parseDouble(s));
-					rfObj.put(q, psmap);
-				}
-				line = br.readLine();
+				HashMap<String, Double> psmap = new HashMap<String, Double>();
+				psmap.put(p, Double.parseDouble(s));
+				rfObj.put(q, psmap);
 			}
+			line = br.readLine();
 		}
 		br.close();
 		return rfObj;
