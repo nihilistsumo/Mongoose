@@ -14,6 +14,6 @@ echo "Done"
 #cd Mongoose
 mkdir ../mongoose-results
 echo "Installation complete"
-echo "Run Mongoose using: java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar"
+echo "Run Mongoose using: ./run.sh"
 echo "Results will be saved at mongoose-results"
 #java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar
