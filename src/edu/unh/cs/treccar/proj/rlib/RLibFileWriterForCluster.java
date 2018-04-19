@@ -27,7 +27,7 @@ public class RLibFileWriterForCluster {
 		this.pr = new Properties();
 		try {
 			this.pr.load(new FileInputStream(new File(RLibFileWriterForCluster.PROP_FILE)));
-			this.mh = new MongooseHelper(this.pr);
+			this.mh = new MongooseHelper(this.pr, "-rl");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

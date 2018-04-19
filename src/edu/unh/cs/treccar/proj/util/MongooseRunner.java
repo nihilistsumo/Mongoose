@@ -23,7 +23,16 @@ public class MongooseRunner {
 		try {
 			Properties prop = new Properties();
 			prop.load(new FileInputStream(new File("project.properties")));
-			MongooseHelper mh = new MongooseHelper(prop);
+			MongooseHelper mh = new MongooseHelper(prop, args[0]);
+			
+			//To process similarity data between para pair
+			// -p candidate-run-file-path parasim-out-file-path
+			if(args[0].equalsIgnoreCase("-p")) {
+				String candSetFilePath = args[1];
+				String simDataOutFilePath = args[2];
+				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
+			}
+			/*
 			for(String cmd:prop.getProperty("mode").split("-")){
 				if(cmd.equalsIgnoreCase("ir")){
 					LuceneRanker lr = new LuceneRanker(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+prop.getProperty("parafile"), 
@@ -105,7 +114,8 @@ public class MongooseRunner {
 							prop.getProperty("curl-path"), prop.getProperty("out-dir")+"/"+prop.getProperty("paramap-run"));
 				}
 			}
-		} catch (IOException | ParseException | ClassNotFoundException e) {
+			*/
+		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

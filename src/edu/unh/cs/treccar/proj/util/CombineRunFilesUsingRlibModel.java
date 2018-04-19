@@ -19,7 +19,7 @@ public class CombineRunFilesUsingRlibModel {
 	
 	public void writeRunFile(Properties p) throws IOException{
 		String[] runfiles = p.getProperty("runfile-list").split(" ");
-		MongooseHelper mh = new MongooseHelper(p);
+		MongooseHelper mh = new MongooseHelper(p, "-rf");
 		double[] optW = mh.getWeightVecFromRlibModel(p.getProperty("out-dir")+"/"+p.getProperty("rlib-model"));
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("comb-run-out"))));

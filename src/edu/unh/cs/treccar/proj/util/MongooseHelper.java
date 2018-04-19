@@ -68,13 +68,13 @@ public class MongooseHelper {
 	SimilarityCalculator sc;
 	int nThreads;
 	
-	public MongooseHelper(Properties pr) {
+	public MongooseHelper(Properties pr, String mode) {
 		// TODO Auto-generated constructor stub
 		this.p = pr;
 		//this.parasMap = DataUtilities.getParaMapFromPath(pr.getProperty("data-dir")+"/"+pr.getProperty("parafile"));
 		//this.preprocessedParasMap = DataUtilities.getPreprocessedParaMap(parasMap);
 		//this.reducedParasMap = DataUtilities.getReducedParaMap(preprocessedParasMap);
-		if(pr.getProperty("mode").equalsIgnoreCase("-p") || pr.getProperty("mode").equalsIgnoreCase("-l"))
+		if(mode.equalsIgnoreCase("-p") || mode.equalsIgnoreCase("-l"))
 			this.sc = new SimilarityCalculator();
 		if(this.p.getProperty("use-default-poolsize").equalsIgnoreCase("yes")||
 				this.p.getProperty("use-default-poolsize").equalsIgnoreCase("y"))
@@ -267,36 +267,42 @@ public class MongooseHelper {
 			HashMap<String, ArrayList<String>> pageParasMap) throws IOException, ParseException{
 		HashMap<String, ArrayList<ParaPairData>> allPagesData = new HashMap<String, ArrayList<ParaPairData>>();
 		ILexicalDatabase db = new NictWordNet();
-		int i=0;
-		int n=pageParasMap.keySet().size();
+		//int i=0;
+		//int n=pageParasMap.keySet().size();
+		//File logOut = new File(this.p.getProperty("out-dir")+"/"+this.p.getProperty("log-file"));
 		IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(this.p.getProperty("index-dir")).toPath()))));
 		Analyzer analyzer = new StandardAnalyzer();
-		QueryParser qp = new QueryParser("paraid", analyzer);
-		File logOut = new File(this.p.getProperty("out-dir")+"/"+this.p.getProperty("log-file"));
-		for(String pageID:pageParasMap.keySet()){
-			ArrayList<String> paraIDs = pageParasMap.get(pageID);
-			//ArrayList<String> secIDs = this.pageSecMap.get(pageID);
-			//ArrayList<Data.Paragraph> paras = new ArrayList<Data.Paragraph>();
-			System.out.println("Page ID: "+pageID+", "+paraIDs.size()+" paras");
-			BufferedWriter bw = new BufferedWriter(new FileWriter(logOut));
-			bw.append(pageID+" has started with "+paraIDs.size()+" paras, "+(n-i-1)+" to go after this\n");
-			bw.close();
-			/*
-			for(String paraID:paraIDs)
-				paras.add(this.parasMap.get(paraID));
-			*/
-			
-			//Expensive op
-			ArrayList<ParaPairData> data = this.getParaPairData(paraIDs, db, is, qp, analyzer);
-			//
-			
-			allPagesData.put(pageID, data);
-			i++;
-			System.out.println(pageID+" is done, "+(n-i)+" to go");
-			//bw.append(" is done, "+(n-i)+" to go");
-			//bw.close();
-			//System.out.println(data.size());
-		}
+		StreamSupport.stream(pageParasMap.keySet().spliterator(), true).forEach(pageID ->{
+		//for(String pageID:pageParasMap.keySet()){
+			try {
+				QueryParser qp = new QueryParser("paraid", analyzer);
+				ArrayList<String> paraIDs = pageParasMap.get(pageID);
+				//ArrayList<String> secIDs = this.pageSecMap.get(pageID);
+				//ArrayList<Data.Paragraph> paras = new ArrayList<Data.Paragraph>();
+				System.out.println("Page ID: "+pageID+", "+paraIDs.size()+" paras");
+				//BufferedWriter bw = new BufferedWriter(new FileWriter(logOut));
+				//bw.append(pageID+" has started with "+paraIDs.size()+" paras, "+(n-i-1)+" to go after this\n");
+				//bw.close();
+				/*
+				for(String paraID:paraIDs)
+					paras.add(this.parasMap.get(paraID));
+				*/
+				
+				//Expensive op
+				ArrayList<ParaPairData> data = this.getParaPairData(paraIDs, db, is, qp, analyzer);
+				//
+				
+				allPagesData.put(pageID, data);
+				//i++;
+				System.out.println(pageID+" is done");
+				//bw.append(" is done, "+(n-i)+" to go");
+				//bw.close();
+				//System.out.println(data.size());
+			} catch (IOException | ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 		return allPagesData;
 	}
 	
