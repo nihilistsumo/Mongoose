@@ -178,12 +178,11 @@ public class MongooseHelper {
 		oos.close();
 	}
 	
-	public void runHACSimClustering() throws IOException, ParseException, ClassNotFoundException{
+	public void runHACSimClustering(String candSetFilePath, String simDataOutPath, String rlibModelPath, String clusterOutPath) throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				new File(p.getProperty("out-dir")+"/"+p.getProperty("sim-data-out"))));
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(simDataOutPath)));
 		HashMap<String, ArrayList<ParaPairData>> similarityData = (HashMap<String, ArrayList<ParaPairData>>) ois.readObject();
 		ois.close();
 		/*
@@ -191,9 +190,8 @@ public class MongooseHelper {
 			ArrayList<String> sectionIDs, ArrayList<Data.Paragraph> paras, ArrayList<ParaPairData> ppdList
 		 * 
 		 */
-		double[] w = this.getWeightVecFromRlibModel(p.getProperty("out-dir")+"/"+p.getProperty("rlib-model"));
-		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
-				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+		double[] w = this.getWeightVecFromRlibModel(rlibModelPath);
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
 		/* To cluster with true page-para map
 		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
 				p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
@@ -207,8 +205,7 @@ public class MongooseHelper {
 			resultPageClusters.put(page, hac.cluster());
 			System.out.println("Clustering done for "+page);
 		}
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
-				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(clusterOutPath)));
 		oos.writeObject(resultPageClusters);
 		oos.close();
 	}

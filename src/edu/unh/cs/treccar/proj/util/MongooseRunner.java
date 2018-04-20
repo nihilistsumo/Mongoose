@@ -32,6 +32,15 @@ public class MongooseRunner {
 				String simDataOutFilePath = args[2];
 				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
 			}
+			//HACsim clustering
+			// -hacsim candidate-run-file-path parasim-out-file-path
+			else if(args[0].equalsIgnoreCase("-hacsim")) {
+				String candSetFilePath = args[1];
+				String simDataOutFilePath = args[2];
+				String rlibModelPath = args[3];
+				String clusterOutPath = args[4];
+				mh.runHACSimClustering(candSetFilePath, simDataOutFilePath, rlibModelPath, clusterOutPath);
+			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){
 				if(cmd.equalsIgnoreCase("ir")){
@@ -115,7 +124,7 @@ public class MongooseRunner {
 				}
 			}
 			*/
-		} catch (IOException | ParseException e) {
+		} catch (IOException | ParseException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
