@@ -17,15 +17,18 @@ public class CombineRunFilesUsingRlibModel {
 	
 	public static final int RET_PARA_NO_IN_COMBINED = 200;
 	
-	public void writeRunFile(Properties p) throws IOException{
-		String[] runfiles = p.getProperty("runfile-list").split(" ");
+	//Arguments: Properties, folder path to run files, filepath to rlib model, filepath to output runfile
+	public void writeRunFile(Properties p, String runfilesDir, String rlibModelPath, String combinedRunfilePath) throws IOException{
+		//String[] runfiles = p.getProperty("runfile-list").split(" ");
+		File folderOfRunfiles = new File(runfilesDir);
+		File[] runfiles = folderOfRunfiles.listFiles();
 		MongooseHelper mh = new MongooseHelper(p, "-rf");
-		double[] optW = mh.getWeightVecFromRlibModel(p.getProperty("out-dir")+"/"+p.getProperty("rlib-model"));
+		double[] optW = mh.getWeightVecFromRlibModel(rlibModelPath);
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("comb-run-out"))));
-		for(String rf:runfiles){
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(combinedRunfilePath)));
+		for(File rf:runfiles){
 			try {
-				runfileObjList.add(this.getRunfileObj(p.getProperty("out-dir")+"/"+rf));
+				runfileObjList.add(this.getRunfileObj(rf.getAbsolutePath()));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -92,13 +95,14 @@ public class CombineRunFilesUsingRlibModel {
 		return rfObj;
 	}
 
+	//Arguments: folder path to run files, filepath to rlib model, filepath to output runfile
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			CombineRunFilesUsingRlibModel comb = new CombineRunFilesUsingRlibModel();
-			comb.writeRunFile(p);
+			comb.writeRunFile(p, args[0], args[1], args[2]);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
