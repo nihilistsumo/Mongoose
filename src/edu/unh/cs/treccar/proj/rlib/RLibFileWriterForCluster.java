@@ -51,19 +51,23 @@ public class RLibFileWriterForCluster {
 				this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("sim-data-out"));
 	}
 	
-	public void writeFeatureFile(){
+	public void writeFeatureFile() {
+		String simPath = this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("sim-data-out");
+		String rlibOutPath = this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("rlib-out");
+		writeFeatureFile(simPath, rlibOutPath);
+	}
+	
+	public void writeFeatureFile(String simdataPath, String rlibFetFilePath){
 		try {
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-					new File(this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("sim-data-out"))));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(simdataPath)));
 			HashMap<String, ArrayList<ParaPairData>> similarityData = (HashMap<String, ArrayList<ParaPairData>>) ois.readObject();
 			ois.close();
-			BufferedWriter bw = new BufferedWriter(new FileWriter(
-					new File(this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("rlib-out"))));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(rlibFetFilePath)));
 			ArrayList<ParaPairData> ppdList;
 			ArrayList<ArrayList<String>> trueClusters;
 			for(String page:similarityData.keySet()){
 				ppdList = similarityData.get(page);
-				trueClusters = DataUtilities.getGTClusters(page, this.pr.getProperty("data-dir")+"/"+this.pr.getProperty("top-qrels"));
+				trueClusters = DataUtilities.getGTClusters(page, this.pr.getProperty("data-dir")+"/"+this.pr.getProperty("hier-qrels"));
 				String para1, para2, rel, fetLine;
 				ArrayList<Double> scores;
 				for(ParaPairData ppd:ppdList){
