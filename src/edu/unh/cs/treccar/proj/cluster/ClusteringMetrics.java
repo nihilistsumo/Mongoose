@@ -104,7 +104,7 @@ public class ClusteringMetrics {
 			}
 		}
 		else{
-			System.out.println("Page does not contain all paras, ignoring it with output 0 for F1");
+			//System.out.println("Page does not contain all paras, ignoring it with output 0 for F1");
 		}
 		return stats;
 	}
@@ -143,7 +143,7 @@ public class ClusteringMetrics {
 		if(this.detailed)
 			printContingencyMatrix(contingencyMatrix);
 		if((new Double(this.computeRand(contingencyMatrix))).isNaN()) {
-			System.out.println("Adjusted Rand index could not be computed!");
+			//System.out.println("Adjusted Rand index could not be computed!");
 			return 0.0;
 		}
 		else {

@@ -377,11 +377,12 @@ public class MongooseHelper {
 			meanRand+=rand;
 			meanF+=fmeasure;
 			count++;
-			System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
+			//System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
+			System.out.println(pageid+": Adj RAND = "+rand);
 		}
 		meanRand/=count;
 		meanF/=count;
-		System.out.println("Mean Adj RAND = "+meanRand+", mean fmeasure = "+meanF);
+		System.out.println("Mean Adj RAND = "+meanRand);
 	}
 	
 	public void runParaMapper(String clusterFilePath, String outputRunfilePath){
