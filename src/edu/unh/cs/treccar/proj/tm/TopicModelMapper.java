@@ -3,6 +3,7 @@ package edu.unh.cs.treccar.proj.tm;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.wordnet.SynonymMap;
 
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.Input2CharSequence;
@@ -44,7 +46,7 @@ public class TopicModelMapper {
 	private final static int THINNING_INFERENCER = 1;
 	private final static int BURNIN_INFERENCER = 5;
 	
-	public void map(Properties p, String candSetFilePath, String runfileOutPath){
+	public void map(Properties p, String candSetFilePath, String runfileOutPath, int expandMode){
 		try {
 			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
 			/*
@@ -70,9 +72,14 @@ public class TopicModelMapper {
 						paraIDTextMap.put(paraID, paraText);
 					}
 					InstanceList paraIList = this.convertParasToIList(paraIDTextMap);
-					InstanceList secIList = this.convertSecIDsToIList(secIDsInPage);
+					InstanceList secIList = null;
+					if(expandMode==0)
+						secIList = this.convertSecIDsToIList(secIDsInPage);
+					else if(expandMode==1)
+						secIList = this.convertSecIDsToExpandedIList(secIDsInPage);
 					ParallelTopicModel model = new ParallelTopicModel(secIDsInPage.size(), ALPHA_SUM, BETA);
 					model.addInstances(paraIList);
+					//model.addInstances(secIList);
 					model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
 					model.setNumIterations(ITERATIONS);
 					model.estimate();
@@ -121,10 +128,10 @@ public class TopicModelMapper {
 		for(int i=0; i<secIList.size(); i++) {
 			for(int j=0; j<paraIList.size(); j++) {
 				if(runMap.containsKey(secIList.get(i).getName().toString()))
-					runMap.get(secIList.get(i).getName().toString()).put(paraIList.get(j).getName().toString(), this.getKLdiv(queryTopicProbMatrix[i], paraTopicProbMatrix[j]));
+					runMap.get(secIList.get(i).getName().toString()).put(paraIList.get(j).getName().toString(), 1/this.getKLdiv(queryTopicProbMatrix[i], paraTopicProbMatrix[j]));
 				else {
 					HashMap<String, Double> newRanks = new HashMap<String, Double>();
-					newRanks.put(paraIList.get(j).getName().toString(), this.getKLdiv(queryTopicProbMatrix[i], paraTopicProbMatrix[j]));
+					newRanks.put(paraIList.get(j).getName().toString(), 1/this.getKLdiv(queryTopicProbMatrix[i], paraTopicProbMatrix[j]));
 					runMap.put(secIList.get(i).getName().toString(), newRanks);
 				}
 			}
@@ -151,7 +158,7 @@ public class TopicModelMapper {
 		}
 		return iListPara;
 	}
-	
+	/*
 	private InstanceList convertSecIDsToIList(ArrayList<String> secIDs) {
 		InstanceList iListSec = new InstanceList(TopicModelMapper.buildPipeForLDA());
 		for(String secID:secIDs) {
@@ -163,6 +170,57 @@ public class TopicModelMapper {
 			}
 			else
 				secIns = new Instance(secIDText.split(":")[1], null, secID, secID);
+			iListSec.addThruPipe(secIns);
+		}
+		return iListSec;
+	}
+	*/
+	private InstanceList convertSecIDsToIList(ArrayList<String> secIDs) {
+		InstanceList iListSec = new InstanceList(TopicModelMapper.buildPipeForLDA());
+		for(String secID:secIDs) {
+			Instance secIns = null;
+			String secIDText = secID.toLowerCase().replaceAll("%20", " ");
+			if(secIDText.contains("/")) {
+				String[] secTokens = secIDText.split("/");
+				secIns = new Instance(secTokens[0].split(":")[1]+" "+secTokens[secTokens.length-1], null, secID, secID);
+			}
+			else
+				secIns = new Instance(secIDText.split(":")[1], null, secID, secID);
+			iListSec.addThruPipe(secIns);
+		}
+		return iListSec;
+}
+	
+	private InstanceList convertSecIDsToExpandedIList(ArrayList<String> secIDs) throws FileNotFoundException, IOException {
+		InstanceList iListSec = new InstanceList(TopicModelMapper.buildPipeForLDA());
+		SynonymMap syn = new SynonymMap(new FileInputStream("prolog/wn_s.pl"));
+		for(String secID:secIDs) {
+			Instance secIns = null;
+			String secIDText = secID.toLowerCase().replaceAll("%20", " ");
+			String[] secTokens = secIDText.replaceAll("/", " ").split(" ");
+			secTokens[0] = secTokens[0].split(":")[1];
+			secIDText = secTokens[0];
+			for(String token:secTokens) {
+				secIDText+=" "+token;
+				String[] synonyms = syn.getSynonyms(token);
+				/*
+				System.out.print("\nToken: "+token+" Synonyms: ");
+				for(String s:synonyms) {
+					System.out.print(s+" ");
+				}
+				System.out.println();
+				System.out.print("Token: "+token+" Expanded: ");
+				*/
+				int count = 0;
+				for(String s:synonyms) {
+					secIDText+=" "+s;
+					//System.out.print(s+" ");
+					count++;
+				}
+				//System.out.println();
+			}
+			System.out.println("\nSECID-Text: "+secIDText);
+			secIns = new Instance(secIDText, null, secID, secID);
 			iListSec.addThruPipe(secIns);
 		}
 		return iListSec;
@@ -206,7 +264,7 @@ public class TopicModelMapper {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			TopicModelMapper tmm = new TopicModelMapper();
-			tmm.map(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/topic-model-train-run");
+			tmm.map(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/topic-model-expanded-sec-train-run", 1);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

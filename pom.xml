@@ -107,6 +107,14 @@
 		<version>6.6.0</version>
 	</dependency>
 	
+	<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-wordnet -->
+	<dependency>
+    	<groupId>org.apache.lucene</groupId>
+    	<artifactId>lucene-wordnet</artifactId>
+    	<version>3.3.0</version>
+	</dependency>
+	
+	
 	<dependency>
     	<groupId>de.sciss</groupId>
     	<artifactId>ws4j</artifactId>
@@ -150,16 +158,16 @@
 	-->
 	
 	<dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>4.0</version>
-    <scope>compile</scope>
-  </dependency>
-  <dependency>
-    <groupId>org.xerial</groupId>
-    <artifactId>sqlite-jdbc</artifactId>
-    <version>3.7.2</version>
-  </dependency>
+    	<groupId>junit</groupId>
+    	<artifactId>junit</artifactId>
+    	<version>4.0</version>
+    	<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+    	<groupId>org.xerial</groupId>
+    	<artifactId>sqlite-jdbc</artifactId>
+    	<version>3.7.2</version>
+  	</dependency>
   <!--  
   <dependency>
     <groupId>edu.cmu.lti</groupId>

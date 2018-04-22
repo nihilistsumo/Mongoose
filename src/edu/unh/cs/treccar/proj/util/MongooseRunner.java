@@ -33,7 +33,7 @@ public class MongooseRunner {
 				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
 			}
 			//HACsim clustering
-			// -hacsim candidate-run-file-path parasim-out-file-path
+			// -hacsim candidate-run-file-path parasim-out-file-path rlib-model-path cluster-out-path
 			else if(args[0].equalsIgnoreCase("-hacsim")) {
 				String candSetFilePath = args[1];
 				String simDataOutFilePath = args[2];
