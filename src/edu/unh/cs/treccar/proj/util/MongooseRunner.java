@@ -50,6 +50,18 @@ public class MongooseRunner {
 				String clusterOutPath = args[4];
 				mh.runHACSimClustering(candSetFilePath, simDataOutFilePath, rlibModelPath, clusterOutPath);
 			}
+			//Evaluate clustering
+			// -cm cluster-file-path
+			else if(args[0].equalsIgnoreCase("-cm")){
+				String clusterFilePath = args[1];
+				mh.runClusteringMeasure(clusterFilePath);
+			}
+			
+			else if(args[0].equalsIgnoreCase("-pm")){
+				String clusterFilePath = args[1];
+				String outputRunfilePath = args[2];
+				mh.runParaMapper(clusterFilePath, outputRunfilePath);
+			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){
 				if(cmd.equalsIgnoreCase("ir")){

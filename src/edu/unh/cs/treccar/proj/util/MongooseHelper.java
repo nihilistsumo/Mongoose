@@ -364,15 +364,14 @@ public class MongooseHelper {
 	    return result;
 	}
 	
-	public void runClusteringMeasure() throws FileNotFoundException, IOException, ClassNotFoundException{
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(
-				this.p.getProperty("out-dir")+"/"+this.p.getProperty("cluster-out"))));
+	public void runClusteringMeasure(String clusterFilePath) throws FileNotFoundException, IOException, ClassNotFoundException{
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clusterFilePath)));
 		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
 		double rand, fmeasure, meanRand = 0, meanF = 0;
 		int count = 0;
 		for(String pageid:candClusters.keySet()){
 			ClusteringMetrics cm = new ClusteringMetrics(DataUtilities.getGTClusters(
-					pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("top-qrels")), candClusters.get(pageid), false);
+					pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), false);
 			rand = cm.getAdjRAND();
 			fmeasure = cm.fMeasure();
 			meanRand+=rand;
@@ -385,19 +384,22 @@ public class MongooseHelper {
 		System.out.println("Mean Adj RAND = "+meanRand+", mean fmeasure = "+meanF);
 	}
 	
-	public void runParaMapper(){
+	public void runParaMapper(String clusterFilePath, String outputRunfilePath){
 		HashMap<String, ArrayList<ArrayList<String>>> dataCl;
 		try {
 			this.p.load(new FileInputStream(new File("project.properties")));
 			HashMap<String, ArrayList<String>> trainSec = DataUtilities.getArticleSecMap(this.p.getProperty("data-dir")+"/"+this.p.getProperty("outline"));
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(new File(this.p.getProperty("out-dir")+"/"+this.p.getProperty("cluster-out"))));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clusterFilePath)));
 			dataCl = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
 			ois.close();
 			for(String page:dataCl.keySet()){
-				System.out.println(page+" started");
+				/*
+				if(!(page.startsWith("enwiki:Research")))
+					continue;
+					*/
+				//System.out.println(page+" started");
 				ParaMapper pm = new ParaMapper(this.p, dataCl.get(page), trainSec.get(page), DataUtilities.readGloveFile(p));
-				pm.map();
+				pm.map(outputRunfilePath);
 				System.out.println(page+" done");
 			}
 			//ParaMapper pm = new ParaMapper(p, trainCl, trainSec);

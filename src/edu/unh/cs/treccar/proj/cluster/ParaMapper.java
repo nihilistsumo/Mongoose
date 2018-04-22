@@ -35,7 +35,11 @@ public class ParaMapper {
 	public ParaMapper(Properties p, ArrayList<ArrayList<String>> clusters, ArrayList<String> titles, HashMap<String, double[]> gloveVecs){
 		this.pr = p;
 		this.cl = clusters;
-		this.titleIDsToMap = titles;
+		this.titleIDsToMap = new ArrayList<String>();
+		for(String t:titles) {
+			if(!this.titleIDsToMap.contains(t))
+				this.titleIDsToMap.add(t);
+		}
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(new File(this.pr.getProperty("glove-dir")+"/"+this.pr.getProperty("glove-file"))));
@@ -49,7 +53,7 @@ public class ParaMapper {
 		this.tokenVecMap = gloveVecs;
 	}
 	
-	public void map() throws IOException, ParseException{
+	public void map(String runfileOut) throws IOException, ParseException{
 		HashMap<String, ArrayList<String>> labeledClusters = new HashMap<String, ArrayList<String>>();
 		HashMap<String, double[]> clusterVecMap = new HashMap<String, double[]>();
 		HashMap<String, double[]> titleVecMap = new HashMap<String, double[]>();
@@ -95,6 +99,7 @@ public class ParaMapper {
 			for(String token:trimmedTitle.split(" "))
 				tokens.add(token);
 			titleVecMap.put(title, this.getAvgWord2VecFromTokenList(tokens));
+			//System.out.println(title+" "+titleVecMap.size());
 		}
 		ArrayList<double[]> titleVecs = new ArrayList<double[]>();
 		ArrayList<double[]> clusterVecs = new ArrayList<double[]>();
@@ -103,12 +108,12 @@ public class ParaMapper {
 		for(String c:clusterVecMap.keySet())
 			clusterVecs.add(clusterVecMap.get(c));
 		dotProductMatrix = this.getDotProductMatrix(titleVecs, clusterVecs);
-		this.writeRunFile(dotProductMatrix, clusterLabels, this.titleIDsToMap, labeledClusters);
+		this.writeRunFile(runfileOut, dotProductMatrix, clusterLabels, this.titleIDsToMap, labeledClusters);
 	}
 	
-	private void writeRunFile(double[][] mat, ArrayList<String> clabels, ArrayList<String> tids, HashMap<String, ArrayList<String>> cl){
+	private void writeRunFile(String outputRunfilePath, double[][] mat, ArrayList<String> clabels, ArrayList<String> tids, HashMap<String, ArrayList<String>> cl){
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(this.pr.getProperty("out-dir")+"/"+this.pr.getProperty("paramap-run")), true));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputRunfilePath), true));
 			int topRankedClusters = 3;
 			for(int i=0; i<tids.size(); i++){
 				double[] clScores = new double[mat[0].length];
