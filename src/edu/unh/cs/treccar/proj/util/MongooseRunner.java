@@ -62,6 +62,16 @@ public class MongooseRunner {
 				String outputRunfilePath = args[2];
 				mh.runParaMapper(clusterFilePath, outputRunfilePath);
 			}
+			//Combine run files to produce rlib feature file
+			// -cmb runfiles-directory-path fet-file-output-path page-level?true/false
+			else if(args[0].equalsIgnoreCase("-cmb")){
+				String runfilesDir = args[1];
+				String outputFetFilePath = args[2];
+				boolean pageLevel = false;
+				if(args[3].startsWith("T") || args[3].startsWith("t"))
+					pageLevel = true;
+				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, pageLevel);
+			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){
 				if(cmd.equalsIgnoreCase("ir")){

@@ -103,10 +103,10 @@ public class MongooseHelper {
 		ob.searchPageTitles();
 	}
 	
-	public void combineRunfilesForRLib(){
+	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, boolean pageLevel){
 		CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
 		try {
-			rlib.writeFetFile(p);
+			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, pageLevel);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

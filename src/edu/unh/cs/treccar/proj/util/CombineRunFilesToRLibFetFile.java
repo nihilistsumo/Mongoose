@@ -44,14 +44,19 @@ public class CombineRunFilesToRLibFetFile {
 		}
 	}
 	
-	public void writeFetFile(Properties p) throws Exception{
-		String[] runfiles = p.getProperty("runfile-list").split(" ");
-		HashMap<String, ArrayList<String>> qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("top-qrels"));
+	public void writeFetFile(Properties p, String runfilesDir, String outputFetFilePath, boolean pageLevel) throws Exception{
+		File folderOfRunfiles = new File(runfilesDir);
+		File[] runfiles = folderOfRunfiles.listFiles();
+		HashMap<String, ArrayList<String>> qrels = null;
+		if(pageLevel)
+			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+		else
+			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("hier-qrels"));
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("rlib-out"))));
-		for(String rf:runfiles){
+		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFetFilePath)));
+		for(File rf:runfiles){
 			try {
-				runfileObjList.add(this.getRunfileObj(p.getProperty("out-dir")+"/"+rf));
+				runfileObjList.add(this.getRunfileObj(rf.getAbsolutePath()));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -123,7 +128,7 @@ public class CombineRunFilesToRLibFetFile {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
-			rlib.writeFetFile(p);
+			//rlib.writeFetFile(p, true);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
