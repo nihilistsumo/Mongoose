@@ -15,6 +15,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 import edu.unh.cs.treccar.proj.sum.SummaryMapper;
+import edu.unh.cs.treccar.proj.tm.TopicModelMapper;
 
 public class MongooseRunner {
 
@@ -50,6 +51,20 @@ public class MongooseRunner {
 				String clusterOutPath = args[4];
 				mh.runHACSimClustering(candSetFilePath, simDataOutFilePath, rlibModelPath, clusterOutPath);
 			}
+			//HACw2v clustering
+			// -hacwv candidate-run-file-path cluster-out-path
+			else if(args[0].equalsIgnoreCase("-hacwv")){
+				String candSetFilePath = args[1];
+				String clusterOutPath = args[2];
+				mh.runHACW2VClustering(candSetFilePath, clusterOutPath);
+			}
+			//KMw2v clustering
+			// -kmwv candidate-run-file-path cluster-out-path
+			else if(args[0].equalsIgnoreCase("-kmwv")){
+				String candSetFilePath = args[1];
+				String clusterOutPath = args[2];
+				mh.runKMeansW2VClustering(candSetFilePath, clusterOutPath);
+			}
 			//Evaluate clustering
 			// -cm cluster-file-path
 			else if(args[0].equalsIgnoreCase("-cm")){
@@ -71,6 +86,23 @@ public class MongooseRunner {
 				if(args[3].startsWith("T") || args[3].startsWith("t"))
 					pageLevel = true;
 				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, pageLevel);
+			}
+			//Produces hierarchical runfiles using summarizer
+			// -sm candidate-run-file-path output-run-file-path
+			else if(args[0].equalsIgnoreCase("-sm")){
+				String candSetFilePath = args[1];
+				String outputRunfilePath = args[2];
+				SummaryMapper sm = new SummaryMapper(prop);
+				sm.map(prop, candSetFilePath, outputRunfilePath);
+			}
+			//Produces hierarchical runfiles using LDA Topic Model
+			// -tm candidate-run-file-path output-run-file-path mode
+			else if(args[0].equalsIgnoreCase("-tm")){
+				String candSetFilePath = args[1];
+				String outputRunfilePath = args[2];
+				int mode = Integer.parseInt(args[3]);
+				TopicModelMapper tmm = new TopicModelMapper();
+				tmm.map(prop, candSetFilePath, outputRunfilePath, mode);
 			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){

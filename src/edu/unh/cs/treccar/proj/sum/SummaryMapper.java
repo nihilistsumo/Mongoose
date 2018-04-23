@@ -143,10 +143,9 @@ public class SummaryMapper {
 		return val;
 	}
 	
-	public void map(Properties p){
+	public void map(Properties p, String candSetFilePath, String outputRunfilePath){
 		try {
-			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(
-					p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
 			/*
 			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getGTMapQrels(
 					p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
@@ -154,7 +153,7 @@ public class SummaryMapper {
 			
 			HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(
 					p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(p.getProperty("out-dir")+"/"+p.getProperty("paramap-run"))));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputRunfilePath)));
 			//ArrayList<String> results = new ArrayList<String>();
 			StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
 				try {
@@ -200,7 +199,7 @@ public class SummaryMapper {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			SummaryMapper sm = new SummaryMapper(p);
-			sm.map(p);
+			//sm.map(p);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

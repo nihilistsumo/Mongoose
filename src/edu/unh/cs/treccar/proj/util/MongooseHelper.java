@@ -137,13 +137,12 @@ public class MongooseHelper {
 		bw.close();
 	}
 	
-	public void runKMeansW2VClustering() throws IOException, ParseException{
+	public void runKMeansW2VClustering(String candSetFilePath, String clusterOutPath) throws IOException, ParseException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(
 				p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		
-		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
-				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
 		
 		/*
 		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
@@ -172,8 +171,7 @@ public class MongooseHelper {
 			
 		});
 		
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
-				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(clusterOutPath)));
 		oos.writeObject(resultPageClusters);
 		oos.close();
 	}
@@ -210,19 +208,17 @@ public class MongooseHelper {
 		oos.close();
 	}
 	
-	public void runHACW2VClustering() throws IOException, ParseException, ClassNotFoundException{
+	public void runHACW2VClustering(String candSetFilePath, String clusterOutPath) throws IOException, ParseException, ClassNotFoundException{
 		HashMap<String, ArrayList<ArrayList<String>>> resultPageClusters = new HashMap<String, ArrayList<ArrayList<String>>>();
 		//HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
 		HashMap<String, ArrayList<String>> pageSecMap = DataUtilities.getArticleSecMap(p.getProperty("data-dir")+"/"+p.getProperty("outline"));
-		/*
-		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(
-				p.getProperty("out-dir")+"/"+p.getProperty("trec-runfile"));
-		*/
+		
+		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
+		
 		HashMap<String, double[]> gloveVecs = DataUtilities.readGloveFile(p);
 		int vecSize = gloveVecs.get("the").length;
 		/* To cluster with true page-para map */
-		HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(
-				p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
+		//HashMap<String, ArrayList<String>> pageParaMapRunFile = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
 		
 		StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
 			try {
@@ -241,8 +237,7 @@ public class MongooseHelper {
 			
 		});
 		
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
-				new File(p.getProperty("out-dir")+"/"+p.getProperty("cluster-out"))));
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(clusterOutPath)));
 		oos.writeObject(resultPageClusters);
 		oos.close();
 	}
