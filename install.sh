@@ -8,6 +8,7 @@ echo "Done compiling and packaging"
 #cd ..
 echo "Adding necessary configuration files and wordnet database..."
 cp /home/mong/similarity.conf /home/mong/jawjaw.conf /home/mong/wnjpn.db .
+cp -r /home/mong/prolog .
 jar uf target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar similarity.conf jawjaw.conf wnjpn.db
 rm similarity.conf jawjaw.conf wnjpn.db
 echo "Done"
