@@ -76,3 +76,7 @@ map                       all    0.0988
 Rprec                     all    0.1578
 recip_rank                all    0.4996
 
+12. Shubham cand + laura combined using Rlib
+map                   	all	0.1355
+Rprec                 	all	0.1947
+recip_rank            	all	0.6721
