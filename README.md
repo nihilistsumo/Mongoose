@@ -14,25 +14,75 @@ git clone https://github.com/nihilistsumo/Mongoose.git
 cd Mongoose
 ```
 
-3. Change permission of the run.sh script:
+3. Change permission of the scripts:
 ```
-chmod 755 run.sh
+chmod 755 install.sh run.sh
 ```
 
 4. Run the installation script:
 ```
-./run.sh
-```
-
-5. Run Mongoose (with default options):
-```
-java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+./install.sh
 ```
 
 ## Usage
-Running the installation script **run.sh** builds the project, adds the necessary files to the project and creates the output directory called **mongoose-results** in the **same directory where you clone this project**. 
+Running the script **run.sh** tests 7 variations with default settings of our project on train dataset and reports the treceval results. However if you wish to run a single method with custom parameters, you have to run the generated jar file **Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar** with command line arguments. Following is a detailed description of the same.
 
-You can change various parameters and options through **_project.properties_** files located inside Mongoose directory. Following are some of the important option/variable names and their descriptions:
+Available methods, options and their corresponding arguments:
+
+1. -p calculates wordnet similarity between all paragraph pairs
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -p path-to-candidate-set-pagerun-file path-to-output-file
+```
+This will calculate wordnet similarity between all the paragraph pairs inside each page mentioned in the candidate set and save the data as a serialized object in a file.
+
+2. -hacsim runs HAC with wordnet similarity
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -hacsim path-to-candidate-set-pagerun-file path-to-parapair-similarity-data path-to-rlib-trained-model-file path-to-output-file
+```
+This will cluster paragraphs for each page in candidate set using HAC with wordnet similarity and using the optimized weight vector for each similarity from the rlib model file and save the results.
+
+3. -hacwv runs HAC with word2vec cosine similarity
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -hacwv path-to-candidate-set-pagerun-file path-to-output-file
+```
+This will cluster paragraphs for each page in candidate set using HAC with word2vec feature vectors obtained from glove pretrained model and save the results.
+
+4. -kmwv runs KMeans with word2vec feature vector
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -kmwv path-to-candidate-set-pagerun-file path-to-output-file
+```
+This will cluster paragraphs for each page in candidate set using KMeans with word2vec feature vectors obtained from glove pretrained model and save the results.
+
+5. -cm calculate Adjusted RAND index of clusters
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cm path-to-cluster-output-file
+```
+6. -pm map clusters to sections using word2vec feature vector
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -pm path-to-cluster-output-file path-to-output-runfile
+```
+This will map paragraphs in clusters in a page to the sections using word2vec features and save the results in a runfile format.
+
+7. -sm map paragraphs in the candidate set to sections using paragraph summarization
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -sm path-to-candidate-set-pagerun-file path-to-output-runfile
+```
+This will map paragraphs in candidate set of a page to the sections using paragraph summaries and save the results in a runfile format.
+
+8. -tm map paragraphs in the candidate set to sections using LDA topic model
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm path-to-candidate-set-pagerun-file path-to-output-runfile mode
+```
+
+Also you can change various parameters and options through **_project.properties_** files located inside Mongoose directory.
 ```
 data-dir=path to benchmarkY1train/test directory
 
