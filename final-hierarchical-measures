@@ -40,12 +40,6 @@ map                       all    0.0168
 Rprec                     all    0.0109
 recip_rank                all    0.0225
 
-
-8. Candidate Set Generation using Query Expansion with entities from DBPedia
-MAP : 0.0567
-Rprec : 0.0985
-recip_rank : 0.3478
-
 9. Weighted PageRank with Common Entities
 map                       all    0.0072
 Rprec                     all    0.0044
@@ -55,6 +49,14 @@ recip_rank                all    0.0146
 map                       all    0.0083
 Rprec                     all    0.0054
 recip_rank                all    0.0167
+
+------ Candidate sets ----------
+
+
+8. Candidate Set Generation using Query Expansion with entities from DBPedia
+MAP : 0.0567
+Rprec : 0.0985
+recip_rank : 0.3478
 
 11. BM25+(BM25+KNN-INC)+(BM25+KNN-EXT)
 map                       all    0.0877
