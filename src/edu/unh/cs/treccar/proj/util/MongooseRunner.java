@@ -96,13 +96,14 @@ public class MongooseRunner {
 				sm.map(prop, candSetFilePath, outputRunfilePath);
 			}
 			//Produces hierarchical runfiles using LDA Topic Model
-			// -tm candidate-run-file-path output-run-file-path mode
+			// -tm candidate-run-file-path output-run-file-path mode parallel>0
 			else if(args[0].equalsIgnoreCase("-tm")){
 				String candSetFilePath = args[1];
 				String outputRunfilePath = args[2];
 				int mode = Integer.parseInt(args[3]);
+				int parallel = Integer.parseInt(args[4]);
 				TopicModelMapper tmm = new TopicModelMapper();
-				tmm.map(prop, candSetFilePath, outputRunfilePath, mode);
+				tmm.map(prop, candSetFilePath, outputRunfilePath, mode, parallel);
 			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){

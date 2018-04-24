@@ -46,7 +46,7 @@ public class TopicModelMapper {
 	private final static int THINNING_INFERENCER = 1;
 	private final static int BURNIN_INFERENCER = 5;
 	
-	public void map(Properties p, String candSetFilePath, String runfileOutPath, int expandMode){
+	public void map(Properties p, String candSetFilePath, String runfileOutPath, int expandMode, int parallel){
 		try {
 			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
 			/*
@@ -61,7 +61,10 @@ public class TopicModelMapper {
 			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(p.getProperty("index-dir")).toPath()))));
 			Analyzer analyzer = new StandardAnalyzer();
 			HashMap<String, HashMap<String, Double>> rankResult = new HashMap<String, HashMap<String, Double>>();
-			StreamSupport.stream(pageSecMap.keySet().spliterator(), true).forEach(page -> { 
+			boolean isParallel = false;
+			if(parallel>0)
+				isParallel = true;
+			StreamSupport.stream(pageSecMap.keySet().spliterator(), isParallel).forEach(page -> { 
 				try {
 					QueryParser qp = new QueryParser("paraid", analyzer);
 					ArrayList<String> paraIDsInPage = pageParaMap.get(page);
@@ -264,7 +267,7 @@ public class TopicModelMapper {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			TopicModelMapper tmm = new TopicModelMapper();
-			tmm.map(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/topic-model-expanded-sec-train-run", 1);
+			tmm.map(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/topic-model-expanded-sec-train-run", 1, 1);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

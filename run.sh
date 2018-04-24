@@ -65,7 +65,7 @@ echo "Evaluating runfile using treceval..."
 #LDATopicModel Mapper
 echo -e "\n\n5. Mode: LDA Topic Model"
 echo  "Starting LDA Topic Model mapper..."
-java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm /home/mong/cand-sets/$pagerunfilename-page-run mongoose-results/lda-topic-out-$pagerunfilename-run 0
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm /home/mong/cand-sets/$pagerunfilename-page-run mongoose-results/lda-topic-out-$pagerunfilename-run 0 0
 echo "All sections mapped. Runfile saved in mongoose-results/lda-topic-out-$pagerunfilename-run"
 echo "Evaluating runfile using treceval..."
 #Evaluate run file
@@ -74,7 +74,7 @@ echo "Evaluating runfile using treceval..."
 #LDATopicModel Mapper
 echo -e "\n\n6. Mode: LDA Topic Model with section headings expanded using wordnet synonyms"
 echo  "Starting LDA Topic Model mapper..."
-java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm /home/mong/cand-sets/$pagerunfilename-page-run mongoose-results/lda-topic-expanded-out-$pagerunfilename-run 1
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm /home/mong/cand-sets/$pagerunfilename-page-run mongoose-results/lda-topic-expanded-out-$pagerunfilename-run 1 0
 echo "All sections mapped. Runfile saved in mongoose-results/lda-topic-expanded-out-$pagerunfilename-run"
 echo "Evaluating runfile using treceval..."
 #Evaluate run file
