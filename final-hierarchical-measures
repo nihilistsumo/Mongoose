@@ -56,3 +56,23 @@ map                       all    0.0083
 Rprec                     all    0.0054
 recip_rank                all    0.0167
 
+11. BM25+(BM25+KNN-INC)+(BM25+KNN-EXT)
+map                       all    0.0877
+Rprec                     all    0.1449
+recip_rank                all    0.4501
+
+12. LM-DS+(LM-DS+KNN-INC)+(LM-DS+KNN-EXT)
+map                       all    0.0933
+Rprec                     all    0.1520
+recip_rank                all    0.4349
+
+13. LM-JM+(LM-JM+KNN-INC)+(LM-JM+KNN-EXT)
+map                       all    0.0699
+Rprec                     all    0.1202
+recip_rank                all    0.3397
+
+11. ALL
+map                       all    0.0988
+Rprec                     all    0.1578
+recip_rank                all    0.4996
+
