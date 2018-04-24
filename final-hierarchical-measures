@@ -1,0 +1,58 @@
+summary-out-comb-top200-laura-cand-train-run
+map                       all    0.0108
+Rprec                     all    0.0084
+recip_rank                all    0.0234
+
+
+hacsim-comb-top200-laura-cand-train-run
+map                       all    0.0029
+Rprec                     all    0.0016
+recip_rank                all    0.0054
+
+
+hacwv-comb-top200-laura-cand-train-run
+map                       all    0.0027
+Rprec                     all    0.0020
+recip_rank                all    0.0059
+
+
+kmwv-comb-top200-laura-cand-train-run
+map                       all    0.0034
+Rprec                     all    0.0022
+recip_rank                all    0.0073
+
+
+topic-model-expanded-sec-train-run
+map                       all    0.0073
+Rprec                     all    0.0030
+recip_rank                all    0.0117
+
+
+topic-model-train-run
+map                       all    0.0060
+Rprec                     all    0.0025
+recip_rank                all    0.0121
+
+
+query-expansion-data-muse-and-CN-BM25-run
+map                       all    0.0168
+Rprec                     all    0.0109
+recip_rank                all    0.0225
+
+
+
+Candidate Set Generation using Query Expansion with entities from DBPedia
+MAP : 0.0567
+Rprec : 0.0985
+recip_rank : 0.3478
+
+Weighted PageRank with Common Entities
+map                       all    0.0072
+Rprec                     all    0.0044
+recip_rank                all    0.0146
+
+Weighted PageRank with Common Words
+map                       all    0.0083
+Rprec                     all    0.0054
+recip_rank                all    0.0167
+
