@@ -98,9 +98,10 @@ public class MongooseHelper {
 			String word2vecFile, int topSearch, int topFeedback, int topTerms, String qe_method, String cs_method, Analyzer a, Similarity s){
 	*/
 	public void runQueryExpand(Properties p, Analyzer a, Similarity s){
+		String mode = p.getProperty("search-mode");
 		Query.Search ob = new Query.Search(p.getProperty("index-dir"), p.getProperty("out-dir"), p.getProperty("data-dir")+"/"+p.getProperty("outline"), p.getProperty("trec-runfile"), p.getProperty("stopfile"), 
 				p.getProperty("glove-dir")+"/"+p.getProperty("glove-file"), Integer.parseInt(p.getProperty("no-ret")), 100, 10, p.getProperty("qe-method"), p.getProperty("cs-method"), a, s);
-		ob.searchPageTitles();
+		ob.search(mode);
 	}
 	
 	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, boolean pageLevel){
