@@ -73,7 +73,7 @@ public class NamedEntityRecognizer {
         System.setProperty("file.encoding", "UTF-8");
 
         if (args.length <3) {
-        	System.out.println("Format: ParagraphsFile OutFile CandidateParagraphs");
+        	System.out.println("Format: ParagraphFile OutFile CandidateParagraphs");
         	System.exit(-1);
         }        		
         
