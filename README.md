@@ -108,31 +108,75 @@ mode=this controls which modules of Mongoose are to be run and in which order
 ```
 Following options are available for mode
 
--ir = index then rank, -r = only rank, -p = process parapair similarity data, 
--l = rlib fet file writing, -c = hac sim cluster, -pm = para mapper, -cm = measure clustering
--km = kmeans clustering, -cw = hac word2vec cluster, -cb = convert cluster data to plain text file
--pt = plain text extractor, -cmb = combine run files and create a feature file for RLib,
--sm = summary mapper, -qe = candidate generation using query expansion
+1. -ir = index then rank, 
+
+2. -r = only rank, 
+
+3. -p = process parapair similarity data, 
+
+4. -l = rlib fet file writing, 
+
+5. -c = hac sim cluster, 
+
+6. -pm = para mapper, 
+
+7. -cm = measure clustering
+
+8. -km = kmeans clustering, 
+
+9. -cw = hac word2vec cluster, 
+
+10. -cb = convert cluster data to plain text file
+
+11. -pt = plain text extractor, 
+
+12. -cmb = combine run files and create a feature file for RLib,
+
+13. -sm = summary mapper, 
+
+14. -qe = candidate generation using query expansion
 
 For example: mode=-qe-sm (default) will first generate candidate set using query expansion and then using that generate run file for top-level sections using summarization methods.
 
 Following options are available for query expansion ( option: "qe-method" in project.properties) :
 
-RM3 = Relevance Model 3 (default)
+1. RM3 = Relevance Model 3 (default)
 
-KNN-PRF = KNN with Pseudo-Relevance Feedback (PRF)
+2. KNN-PRF = Simple KNN with Pseudo-Relevance Feedback (PRF)
 
-KNN-INC = Incremental KNN with PRF
+3. KNN-INC = Incremental KNN with PRF
 
-KNN-EXT = KNN with extended query set with PRF
+4. KNN-EXT = KNN with extended query set with PRF
+
+For example, if you want to run query expansion with option (3), then change the value of the field "qe-method" in the properties file to "KNN-INC".
 
 Each of the above query expansion methods can work on either page level, section level, or top-level section queries (option: "search-mode" in project.properties). The available modes are:
 
-page-title: Searches for page titles as queries (default)
+1. page-title: Searches for page titles as queries (default)
 
-section-path : Searches for section headings as queries
+2. section-path : Searches for section headings as queries
 
-toplevel-sections : Searches for toplevel sections as queries
+3. toplevel-sections : Searches for toplevel sections as queries
+
+For example, if you want to run query expansion on section headings as queries, then change the value of the field "search-mode" in the properties file to "section-path".
+
+Each of the above query expansion methods works with PRF which uses one of the following methods to retrieve a candidate set of top paragrapghs (option: "cs-method" in project.properties) :
+
+1. BM25 : Standard BM25 retrieval model (default)
+
+2. LM-DS : Standard Language Model with Dirichlet Smoothing
+
+3. LM-JM : Standard Language Model with Jelenik-Mercer Smoothing 
+
+For example, if you want to generate candidate set for PRF using LM-DS, then change the value of the field "cs-method" in the properties file to "LM-DS". 
+
+In summary, suppose you want to run the variation: "Candidate generation using LM-DS with PRF, query expansion with simple KNN on top-level sections" then you need to make the following changes to the properties file:
+
+qe-method = KNN-PRF
+
+cs-method = LM-DS
+
+search-mode = section-path
 
 ## Examples
 
