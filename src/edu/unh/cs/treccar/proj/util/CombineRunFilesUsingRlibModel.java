@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public class CombineRunFilesUsingRlibModel {
 	
-	public static final int RET_PARA_NO_IN_COMBINED = 200;
+	public static final int RET_PARA_NO_IN_COMBINED = 200; 
 	
 	//Arguments: Properties, folder path to run files, filepath to rlib model, filepath to output runfile
 	public void writeRunFile(Properties p, String runfilesDir, String rlibModelPath, String combinedRunfilePath) throws IOException{
