@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public class CombineRunFilesUsingRlibModel {
 	
-	public static final int RET_PARA_NO_IN_COMBINED = 200; 
+	public static final int RET_PARA_NO_IN_COMBINED = 500; 
 	
 	//Arguments: Properties, folder path to run files, filepath to rlib model, filepath to output runfile
 	public void writeRunFile(Properties p, String runfilesDir, String rlibModelPath, String combinedRunfilePath) throws IOException{
@@ -64,8 +64,10 @@ public class CombineRunFilesUsingRlibModel {
 				double combinedScore = 0;
 				assert(optW.length==runfileObjList.size());
 				for(int r=0; r<runfileObjList.size(); r++){
-					if(runfileObjList.get(r).get(q).containsKey(para))
-						combinedScore+=runfileObjList.get(r).get(q).get(para)*optW[r];
+					if(runfileObjList.get(r).containsKey(q)) {
+						if(runfileObjList.get(r).get(q).containsKey(para))
+							combinedScore+=runfileObjList.get(r).get(q).get(para)*optW[r];
+					}
 				}
 				paraScores.put(para, combinedScore);
 				//bw.write(q+" Q0 "+para+" 0 "+combinedScore+" COMBINED\n");

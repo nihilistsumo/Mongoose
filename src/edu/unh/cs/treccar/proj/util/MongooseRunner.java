@@ -114,6 +114,32 @@ public class MongooseRunner {
 				TopicModelMapper tmm = new TopicModelMapper();
 				tmm.map(prop, candSetFilePath, outputRunfilePath, mode, parallel);
 			}
+			
+			else if(args[0].equalsIgnoreCase("-qe")){
+				Similarity sim = null;
+				if(prop.getProperty("cs-method").equals("BM25"))
+				{
+					System.out.println("Using BM25 for candidate set generation");
+					sim = new BM25Similarity();
+				}
+				else if(prop.getProperty("cs-method").equals("LM-DS"))
+				{
+					System.out.println("Using LM-DS for candidate set generation");
+					sim = new LMDirichletSimilarity();
+				}
+				else if(prop.getProperty("cs-method").equals("LM-JM"))
+				{
+					System.out.println("Using LM-JM for candidate set generation");
+					float lambda = Float.parseFloat(args[11]);
+					sim = new LMJelinekMercerSimilarity(lambda);
+				}
+				else
+				{
+					System.out.println("Using BM25 as default for candidate set generation");
+					sim = new BM25Similarity();
+				}
+				mh.runQueryExpand(prop, new StandardAnalyzer(), sim);
+			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){
 				if(cmd.equalsIgnoreCase("ir")){
