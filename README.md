@@ -35,10 +35,6 @@ Now run ./run.sh to test the project as described in the Usage section below.
 
 3. The results are stored in the directory **mongoose-results** which is created in the same directory as the one in which you intall the  prototype.
 
-The default methods produces the following run files:
-
-summary-out-comb-top200-laura-cand-test-run: Run file for text summarization using word2vec and tfidf. 
-
 
 ### Available methods, options and their corresponding arguments for running jar file:
 
@@ -205,5 +201,12 @@ search-mode = section-path
 ## Results
 
 The run file for benchmarkY1test can be found at: /home/mong/mongoose-hier-test-top3-runfiles
+
+The followilg files are present:
+
+summary-out-comb-top200-laura-cand-test-run: Run file for text summarization using word2vec and tfidf. 
+
+lda-topic-expanded-out-comb-top200-laura-cand-test-run: Run file for LDA topic modelling with WordNet synonyms
+
 The run file for benchmarkY1train can be found at: /home/mong/mongoose-hier-train-runfiles
 
