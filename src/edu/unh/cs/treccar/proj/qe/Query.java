@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,15 +160,20 @@ public class Query
 			Query.tokens = new ArrayList<>(128);
 			Query.stopWords = new ArrayList<String>();
 			Query.word2vec = new HashMap<String, ArrayList<Double>>();
-			if(QE_METHOD.equalsIgnoreCase("KNN"))
-				System.out.println("Using KNN for QE");
+			System.out.println("Fetching top-"+TOP_SEARCH+" "+"passages");
+			if(QE_METHOD.equalsIgnoreCase("KNN-PRF"))
+				System.out.println("Using KNN with PRF for QE");
+			else if(QE_METHOD.equalsIgnoreCase("KNN-INC"))
+				System.out.println("Using Incremental KNN with PRF for QE");
+			else if(QE_METHOD.equalsIgnoreCase("KNN-EXT"))
+				System.out.println("Using Extended set KNN with PRF for QE");
 			else
 				System.out.println("Using RM3 for QE");
 			
 			try 
 			{
 				getStopWords();
-				if(QE_METHOD.equalsIgnoreCase("KNN"))
+				if(QE_METHOD.equalsIgnoreCase("KNN-PRF") || QE_METHOD.equalsIgnoreCase("KNN-INC") || QE_METHOD.equalsIgnoreCase("KNN-EXT"))
 				{
 					getWordToVec();
 				}
@@ -239,17 +245,27 @@ public class Query
 		{
 			TopDocs tds = Index.Search.searchIndex(qString,n);
 			ScoreDoc[] retDocs = tds.scoreDocs;
-			String originalQuery = qString.toString("parabody");
 			String topTerms = "";
+			String originalQuery = qString.toString("parabody");
 			if(QE_METHOD.equalsIgnoreCase("RM3"))
 			{
 				Query.RM3Expand ob = new Query.RM3Expand(tds, TOP_TERMS);
 				topTerms = ob.expand();
 			}
-			else if(QE_METHOD.equalsIgnoreCase("KNN"))
+			else if(QE_METHOD.equalsIgnoreCase("KNN-PRF"))
 			{
 				Query.KNNExpand ob = new Query.KNNExpand(tds,TOP_TERMS);
-				topTerms = ob.expand(originalQuery);
+				topTerms = ob.PRFExpand(originalQuery);
+			}
+			else if(QE_METHOD.equalsIgnoreCase("KNN-INC"))
+			{
+				Query.KNNExpand ob = new Query.KNNExpand(tds,TOP_TERMS);
+				topTerms = ob.incrementalExpand(originalQuery);
+			}
+			else if(QE_METHOD.equalsIgnoreCase("KNN-EXT"))
+			{
+				Query.KNNExpand ob = new Query.KNNExpand(tds,TOP_TERMS);
+				topTerms = ob.bigramExpand(originalQuery);
 			}
 			if(topTerms != null)
 			{
@@ -423,7 +439,7 @@ public class Query
 		/**
 		 * Search the top level section names as queries
 		 */
-		public void searchTopLevelSections()
+		private void searchTopLevelSections()
 		{
 			String qString,qID;
 			BooleanQuery query;
@@ -454,7 +470,7 @@ public class Query
 		/**
 		 * Search the page titles as queries
 		 */
-		public void searchPageTitles()
+		private void searchPageTitles()
 		{
 			try
 			{
@@ -475,7 +491,7 @@ public class Query
 		/**
 		 * Search the section headings as queries
 		 */
-		public void searchSectionHeadings()
+		private void searchSectionHeadings()
 		{
 			try
 			{
@@ -487,9 +503,10 @@ public class Query
 		                BooleanQuery query = toQuery(qString);
 		                String qID = Data.sectionPathId(page.getPageId(), sectionPath);
 		                rankParas(query,qID, TOP_SEARCH);
-						System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
+						//System.out.println("\n" + StringUtils.repeat("=", 128) + "\n");
 		        
 		            }
+					System.out.println("Done page:"+page.getPageName());
 				}
 			} 
 			catch ( IOException | ParseException e) 
@@ -534,6 +551,16 @@ public class Query
 		{
 			topDocs = tds;
 			scores = tds.scoreDocs;
+			words = getAllWords();
+			Preprocess p = new Preprocess(words);
+			processedWords = p.getProcessedText();
+		}
+		/**
+		 * Expand the query without PRF
+		 * @throws IOException
+		 */
+		public Expand() throws IOException
+		{
 			words = getAllWords();
 			Preprocess p = new Preprocess(words);
 			processedWords = p.getProcessedText();
@@ -584,16 +611,49 @@ public class Query
 		    return topTerms;
 			
 		}
+		protected String getTopWords1(Map<Query.KNNExpand.BigramTerm, Float> map, int k) throws IOException
+		{
+			Map<Query.KNNExpand.BigramTerm, Float>  sortedMap = new LinkedHashMap<Query.KNNExpand.BigramTerm,Float>();
+			String topTerms = "";
+			int count = 0;
+			List<Map.Entry<Query.KNNExpand.BigramTerm, Float>> entries = new ArrayList<Map.Entry<Query.KNNExpand.BigramTerm, Float>>((Collection<? extends Entry<Query.KNNExpand.BigramTerm, Float>>) map.entrySet());
+		    Collections.sort(entries,new CustomizedHashMap1());
+		    
+		    for (Map.Entry<Query.KNNExpand.BigramTerm, Float> entry : entries) 
+		    	sortedMap.put(entry.getKey(), entry.getValue());
+		    
+		    for(Query.KNNExpand.BigramTerm s : sortedMap.keySet())
+		    {
+		    	String w1 = s.getFirstWord();
+		    	String w2 = s.getSecondWord();
+		    	topTerms += " "+w1+" "+w2;
+		    	count++;
+		    	if(count == k)
+		    		break;
+		    }
+		    return topTerms;
+			
+		}
 		/**
 		 * Class to sort a Map based on the values in descending order
 		 * @author Shubham Chatterjee
 		 *
 		 */
-		private class CustomizedHashMap implements Comparator<Map.Entry<String, Float>> 
+		protected class CustomizedHashMap implements Comparator<Map.Entry<String, Float>> 
 		{
 
 			@Override
 			public int compare(Entry<String, Float> o1, Entry<String, Float> o2) 
+			{
+				return -o1.getValue().compareTo(o2.getValue());
+			}
+
+		}
+		protected class CustomizedHashMap1 implements Comparator<Map.Entry<Query.KNNExpand.BigramTerm, Float>> 
+		{
+
+			@Override
+			public int compare(Entry<Query.KNNExpand.BigramTerm, Float> o1, Entry<Query.KNNExpand.BigramTerm, Float> o2) 
 			{
 				return -o1.getValue().compareTo(o2.getValue());
 			}
@@ -743,7 +803,7 @@ public class Query
 		 */
 		private int K;
 		/**
-		 * Expand the query using KNN
+		 * Expand the query using KNN and PRF
 		 * @param tds TopDocs Top documents for PRF
 		 * @param k Integer Value of K in KNN
 		 * @throws IOException
@@ -754,16 +814,188 @@ public class Query
 			K = k;
 		}
 		/**
+		 * Expand the query using KNN without PRF
+		 * @param k Integer Value of K in KNN
+		 * @throws IOException
+		 */
+		public KNNExpand(int k) throws IOException
+		{
+			super();
+			K = k;
+		}
+		/**
 		 * Expand the query
 		 * @param query String Query to expand
 		 * @return String Top expansion terms concateneted into a string
 		 * @throws IOException
 		 */
-		public String expand(String query) throws IOException
+		public String PRFExpand(String query) throws IOException
 		{
 			String[] qTerms = query.split(" ");
 			LinkedHashMap<String,ArrayList<Double>> queryVectorMap = getQueryVector(qTerms);
-			LinkedHashMap<String,ArrayList<Double>> candidateMap = getCandidateSet(qTerms);
+			LinkedHashMap<String,ArrayList<Double>> candidateMap = getCandidateSet2(qTerms);
+			HashMap<String, Float> scores = new HashMap<String, Float>();
+			float sum = 0.0f;
+			String topTerms;
+			
+			if(candidateMap != null) 
+			{
+				for(String t : candidateMap.keySet())
+				{
+					ArrayList<Double> vector = candidateMap.get(t);
+					for(String q : queryVectorMap.keySet())
+					{
+						if(vector != null && queryVectorMap.get(q) != null)
+							sum += findSimilarity(vector, queryVectorMap.get(q));
+					}
+					scores.put(t, (sum / qTerms.length));
+				}
+				topTerms = getTopWords(scores, K);
+				return topTerms;
+			}
+			else
+				return null;
+		}
+		public String bigramExpand(String query) throws IOException
+		{
+			String[] qTerms = query.split(" ");
+			LinkedHashMap<BigramTerm,ArrayList<Double>> bigramMap = getBigrams(qTerms);
+			LinkedHashMap<String,ArrayList<Double>> queryVectorMap = getQueryVector(qTerms);
+			LinkedHashMap<String,ArrayList<Double>> candidateMap = getCandidateSet2(qTerms);
+			if(candidateMap != null && bigramMap != null)
+			{
+				int size = bigramMap.size() + candidateMap.size();
+				
+				String topTerms1 = getCandidateTopTerms(candidateMap,queryVectorMap, size);
+				String topTerms2 = getBigramTopTerms(bigramMap, queryVectorMap, size);
+				String topTerms = topTerms1+" "+topTerms2;
+				return topTerms;
+			}
+			return null;
+		}
+		private String getBigramTopTerms(LinkedHashMap<BigramTerm,ArrayList<Double>> bigramMap, LinkedHashMap<String,ArrayList<Double>> queryVectorMap, int size) throws IOException
+		{
+			String topTerms="";
+			float sum = 0.0f;
+			HashMap<BigramTerm, Float> scores = new HashMap<BigramTerm, Float>();
+			if(bigramMap != null) 
+			{
+				for(BigramTerm t : bigramMap.keySet())
+				{
+					ArrayList<Double> vector = bigramMap.get(t);
+					for(String q : queryVectorMap.keySet())
+					{
+						if(vector != null && queryVectorMap.get(q) != null)
+							sum += findSimilarity(vector, queryVectorMap.get(q));
+					}
+					scores.put(t, (sum / size));
+				}
+				topTerms = getTopWords1(scores, K);
+			}
+			return topTerms;
+			
+			
+		}
+		private String getCandidateTopTerms(LinkedHashMap<String,ArrayList<Double>> candidateMap, LinkedHashMap<String,ArrayList<Double>> queryVectorMap, int size) throws IOException
+		{
+			String topTerms = "";
+			float sum = 0.0f;
+			HashMap<String, Float> scores = new HashMap<String, Float>();
+			if(candidateMap != null) 
+			{
+				for(String t : candidateMap.keySet())
+				{
+					ArrayList<Double> vector = candidateMap.get(t);
+					for(String q : queryVectorMap.keySet())
+					{
+						if(vector != null && queryVectorMap.get(q) != null)
+							sum += findSimilarity(vector, queryVectorMap.get(q));
+					}
+					scores.put(t, (sum / size));
+				}
+				topTerms = getTopWords(scores, K);
+			}
+			return topTerms;
+		}
+		
+		private LinkedHashMap<Query.KNNExpand.BigramTerm,ArrayList<Double>> getBigrams(String[] qTerms)
+		{
+			LinkedHashMap<BigramTerm,ArrayList<Double>> bigramMap = new LinkedHashMap<BigramTerm,ArrayList<Double>>();
+			for(int i = 0; i < qTerms.length - 1; i++)
+			{
+				String w1 = qTerms[i];
+				String w2 = qTerms[i+1];
+				ArrayList<Double> v1 = word2vec.get(w1);
+				ArrayList<Double> v2 = word2vec.get(w2); 
+				if( v1 != null && v2 != null )
+				{
+					BigramTerm b = new BigramTerm(w1,v1,w2,v2);
+					ArrayList<Double> vector = b.getBigramEmbedding();
+					bigramMap.put(b, vector);
+				}
+			}
+			return bigramMap;
+		}
+		
+		private static class BigramTerm
+		{
+			private String word1;
+			private String word2;
+			private ArrayList<Double> vector1;
+			private ArrayList<Double> vector2;
+			
+			public BigramTerm(String w1, ArrayList<Double> v1, String w2, ArrayList<Double> v2)
+			{
+				word1 = w1;
+				word2 = w2;
+				vector1 = new ArrayList<Double>(v1);
+				vector2 = new ArrayList<Double>(v2);
+			}
+			
+			public String getFirstWord()
+			{
+				return word1;
+			}
+			
+			public String getSecondWord()
+			{
+				return word2;
+			}
+			
+			public ArrayList<Double> getFirstVector()
+			{
+				return vector1;
+			}
+			
+			public ArrayList<Double> getSecondVector()
+			{
+				return vector2;
+			}
+			
+			public ArrayList<Double> getBigramEmbedding()
+			{
+				ArrayList<Double> vector = new ArrayList<Double>();
+				if(vector1.size() != vector2.size())
+				{
+					System.out.println("Vectors of different length! Cannot add them!");
+					System.exit(0);
+				}
+				for(int i = 0; i < vector1.size(); i++)
+					vector.add(vector1.get(i) + vector2.get(i));
+				return vector;
+			}
+		}
+		/**
+		 * Expand the query using incremental expansion
+		 * @param query String
+		 * @return String
+		 * @throws IOException
+		 */
+		public String incrementalExpand(String query) throws IOException
+		{
+			String[] qTerms = query.split(" ");
+			LinkedHashMap<String,ArrayList<Double>> queryVectorMap = getQueryVector(qTerms);
+			LinkedHashMap<String,ArrayList<Double>> candidateMap = getCandidateSet1(qTerms);
 			HashMap<String, Float> scores = new HashMap<String, Float>();
 			float sum = 0.0f;
 			String topTerms;
@@ -792,7 +1024,7 @@ public class Query
 		 * @param vec2 ArrayList<Double> Second vector
 		 * @return Double cosine similarity between the two vectors
 		 */
-		private double findSimilarity(ArrayList<Double> vec1, ArrayList<Double> vec2)
+		private float findSimilarity(ArrayList<Double> vec1, ArrayList<Double> vec2)
 		{
 			if(vec1.size() != vec2.size())
 			{
@@ -800,7 +1032,7 @@ public class Query
 				System.exit(0);
 			}
 			int i, size = vec1.size();
-			double score, numerator = 0.0d, denominator = 0.0d;
+			float score, numerator = 0.0f, denominator = 0.0f;
 			for(i = 0; i < size; i++)
 			{
 				numerator += vec1.get(i) * vec2.get(i);
@@ -814,14 +1046,14 @@ public class Query
 		 * @param vector ArrayList<Double> Vector to find norm
 		 * @return Double L1 norm of the vector
 		 */
-		private double getNorm(ArrayList<Double> vector)
+		private float getNorm(ArrayList<Double> vector)
 		{
-			double norm = 0.0d;
+			float norm = 0.0f;
 			for(int i = 0; i < vector.size(); i++)
 			{
 				norm += vector.get(i) * vector.get(i);
 			}
-			norm = Math.sqrt(norm);
+			norm = (float) Math.sqrt(norm);
 			return norm;
 		}
 		/**
@@ -841,7 +1073,7 @@ public class Query
 		 * @param terms String[] Query terms
 		 * @return LinkedHashMap<String,ArrayList<Double>> HashMap of (word,vector)
 		 */
-		private LinkedHashMap<String,ArrayList<Double>> getCandidateSet(String[] terms)
+		private LinkedHashMap<String,ArrayList<Double>> getCandidateSet2(String[] terms)
 		{
 			LinkedHashMap<String,ArrayList<Double>> candidateMap = new LinkedHashMap<String,ArrayList<Double>>();
 			for(String s : terms)
@@ -856,6 +1088,98 @@ public class Query
 			if(!candidateMap.isEmpty())
 				return candidateMap;
 			return null;
+		}
+		/**
+		 * Get the candidate set of words in the query to consider for expansion
+		 * @param terms String[] Query terms
+		 * @return LinkedHashMap<String,ArrayList<Double>> HashMap of (word,vector)
+		 */
+		private LinkedHashMap<String,ArrayList<Double>> getCandidateSet1(String[] terms)
+		{
+			LinkedHashMap<String,ArrayList<Double>> candidateMap = new LinkedHashMap<String,ArrayList<Double>>();
+			for(String s : terms)
+			{
+				LinkedHashMap<String,ArrayList<Double>> neighbours = getNearestNeighbours(s);
+				
+				if(neighbours != null)
+				{
+					LinkedHashMap<String,ArrayList<Double>> prunedNeighbours = prune(neighbours);
+					if(prunedNeighbours != null)
+					{
+						for( String s1 : prunedNeighbours.keySet() )
+							candidateMap.put(s1, prunedNeighbours.get(s1));
+					}
+				}
+			}
+			if(!candidateMap.isEmpty())
+				return candidateMap;
+			return null;
+		}
+		/**
+		 * Method to prune the nearest neighbours
+		 * @param neighbours LinkedHashMap<String,ArrayList<Double>>
+		 * @return LinkedHashMap<String,ArrayList<Double>>
+		 */
+		private LinkedHashMap<String,ArrayList<Double>> prune(LinkedHashMap<String,ArrayList<Double>> neighbours) 
+		{
+			LinkedHashMap<String,ArrayList<Double>> prunedNeighbours = new LinkedHashMap<String,ArrayList<Double>>();
+			LinkedHashMap<String,ArrayList<Double>> tempNeighbours = new LinkedHashMap<String,ArrayList<Double>>(neighbours);
+			
+			for(int i = 1; i <= 5; i++)
+			{
+				int count = 0;
+				LinkedHashMap<String,ArrayList<Double>> temp = new LinkedHashMap<String,ArrayList<Double>>();
+				if(tempNeighbours != null)
+				{
+					for( String s1 : tempNeighbours.keySet() )
+					{
+						temp.put(s1, tempNeighbours.get(s1));
+						count++;
+						if(count == 20)
+							break;
+					}
+					Iterator<Entry<String, ArrayList<Double>>> it = temp.entrySet().iterator();
+					if(it.hasNext())
+					{
+						Map.Entry<String,ArrayList<Double>> entry = it.next();
+						String key = entry.getKey();
+						ArrayList<Double> value = entry.getValue();
+						prunedNeighbours.put(key,value);
+						temp.remove(key);
+						tempNeighbours = reorder(value,temp);
+					}
+					else
+						return null;
+				}
+			}
+			return prunedNeighbours;
+		}
+		/**
+		 * Method to reorder the terms relative to a given term according to similarity
+		 * @param value ArrayList<Double>
+		 * @param neighbours LinkedHashMap<String,ArrayList<Double>>
+		 * @return temp LinkedHashMap<String,ArrayList<Double>>
+		 */
+		private LinkedHashMap<String,ArrayList<Double>> reorder(ArrayList<Double> value, LinkedHashMap<String,ArrayList<Double>> neighbours)
+		{
+			LinkedHashMap<String, ArrayList<Double>>  temp = new LinkedHashMap<String,ArrayList<Double>>();
+			LinkedHashMap<String, Float>  sortedMap = new LinkedHashMap<String,Float>();
+			HashMap<String, Float> scores = new HashMap<String, Float>();
+			for(String t : neighbours.keySet())
+			{
+				ArrayList<Double> vector = neighbours.get(t);
+				if(vector != null)
+					scores.put(t, findSimilarity(vector, value));
+			}
+			List<Map.Entry<String, Float>> entries = new ArrayList<Map.Entry<String, Float>>((Collection<? extends Entry<String, Float>>)scores.entrySet());
+			Collections.sort(entries,new Expand.CustomizedHashMap());
+		    
+		    for (Map.Entry<String, Float> entry : entries) 
+		    	sortedMap.put(entry.getKey(), entry.getValue());
+		    
+		    for(String str : sortedMap.keySet())
+		    	temp.put(str,word2vec.get(str));
+			return temp;
 		}
 		/**
 		 * Get the nearest neighbours of a term in embedding space
@@ -999,8 +1323,9 @@ public class Query
 		int topSearch = Integer.parseInt(args[6]);
 		int topFeedback = Integer.parseInt(args[7]);
 		int topTerms = Integer.parseInt(args[8]);
-		String qe_method = args[9];
-		String cs_method = args[10];
+		String mode = args[9];
+		String qe_method = args[10];
+		String cs_method = args[11];
 
 		
 		if(cs_method.equals("BM25"))
@@ -1016,7 +1341,7 @@ public class Query
 		else if(cs_method.equals("LM-JM"))
 		{
 			System.out.println("Using LM-JM for candidate set generation");
-			float lambda = Float.parseFloat(args[11]);
+			float lambda = Float.parseFloat(args[12]);
 			sim = new LMJelinekMercerSimilarity(lambda);
 		}
 		else
@@ -1025,8 +1350,7 @@ public class Query
 			System.exit(0);
 		}
 		Query.Search ob = new Query.Search(dir, out_dir, outline_file, out_file, stopFilePath, word2vecFile, topSearch, topFeedback, topTerms, qe_method, cs_method, new StandardAnalyzer(), sim);
-		//ob.searchTopLevelSections();
-		ob.searchPageTitles();
+		ob.search(mode);
 	}
 }
 

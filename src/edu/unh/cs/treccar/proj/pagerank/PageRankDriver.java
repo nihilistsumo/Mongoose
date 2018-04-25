@@ -24,8 +24,10 @@ import java.util.Map.Entry;
 	
 	public PageRankDriver(String filePath,String outFilePath, double a)
 	{
+		System.out.println("Reading Graph file.....");
 		g = new Graph(filePath);
-		System.out.println(g);
+		System.out.println("Done");
+		//System.out.println(g);
 		outFile = outFilePath;
 		nodeSet = g.getAllNodes();
 		alpha = a;
