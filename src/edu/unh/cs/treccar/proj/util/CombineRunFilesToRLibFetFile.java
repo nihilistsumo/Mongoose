@@ -54,7 +54,7 @@ public class CombineRunFilesToRLibFetFile {
 			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("hier-qrels"));
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFetFilePath)));
-		for(File rf:runfiles){
+		for(File rf:runfiles) {
 			try {
 				runfileObjList.add(this.getRunfileObj(rf.getAbsolutePath()));
 			} catch (IOException e) {
@@ -62,19 +62,30 @@ public class CombineRunFilesToRLibFetFile {
 				e.printStackTrace();
 			}
 		}
+		/*
 		for(HashMap<String, HashMap<String, Double>> rf:runfileObjList){
 			if(!rf.keySet().equals(runfileObjList.get(0).keySet()))
 				throw new Exception("Query list of the run files are different!");
 		}
-		for(String q:runfileObjList.get(0).keySet()){
+		*/
+		ArrayList<String> qset = new ArrayList<String>(runfileObjList.get(0).keySet());
+		for(int i=1; i<runfileObjList.size(); i++) {
+			for(String q:runfileObjList.get(i).keySet()) {
+				if(!qset.contains(q))
+					qset.add(q);
+			}
+		}
+		for(String q:qset) {
 			if(qrels.get(q)==null){
 				System.out.println("No query in qrels as "+q);
 				continue;
 			}
 			HashSet<String> paras = new HashSet<String>();
-			paras.addAll(runfileObjList.get(0).get(q).keySet());
-			for(int i=1; i<runfileObjList.size(); i++)
-				paras.addAll(runfileObjList.get(i).get(q).keySet());
+			//paras.addAll(runfileObjList.get(0).get(q).keySet());
+			for(int i=0; i<runfileObjList.size(); i++) {
+				if(runfileObjList.get(i).containsKey(q))
+					paras.addAll(runfileObjList.get(i).get(q).keySet());
+			}
 			for(String para:paras){
 				String fetFileLine = "";
 				ArrayList<String> trueParas = qrels.get(q);
@@ -84,10 +95,14 @@ public class CombineRunFilesToRLibFetFile {
 					fetFileLine = "0 qid:"+q;
 				int j = 1;
 				for(HashMap<String, HashMap<String, Double>> rf:runfileObjList){
-					if(rf.get(q).containsKey(para))
-						fetFileLine+= " "+j+":"+rf.get(q).get(para);
-					else
+					if(!rf.containsKey(q))
 						fetFileLine+= " "+j+":0";
+					else { 
+						if(rf.get(q).containsKey(para))
+							fetFileLine+= " "+j+":"+rf.get(q).get(para);
+						else
+							fetFileLine+= " "+j+":0";
+					}
 					j++;
 				}
 				fetFileLine+=" #"+para;
