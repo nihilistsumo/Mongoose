@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,6 +23,10 @@ public class CombineRunFilesUsingRlibModel {
 		//String[] runfiles = p.getProperty("runfile-list").split(" ");
 		File folderOfRunfiles = new File(runfilesDir);
 		File[] runfiles = folderOfRunfiles.listFiles();
+		Arrays.sort(runfiles);
+		System.out.println("Files to be combined:");
+		for(File f:runfiles)
+			System.out.println(f.getAbsolutePath());
 		MongooseHelper mh = new MongooseHelper(p, "-rf");
 		double[] optW = mh.getWeightVecFromRlibModel(rlibModelPath);
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
@@ -43,15 +48,17 @@ public class CombineRunFilesUsingRlibModel {
 		}
 		*/
 		for(int i=1; i<runfileObjList.size(); i++){
-			intersection.retainAll(runfileObjList.get(i).keySet());
+			//intersection.retainAll(runfileObjList.get(i).keySet());
+			intersection.addAll(runfileObjList.get(i).keySet());
 		}
 		HashMap<String, HashMap<String, Double>> combinedRunfile = new HashMap<String, HashMap<String, Double>>();
 		for(String q:intersection){
 			Map<String, Double> paraScores = new HashMap<String, Double>();
 			HashSet<String> paras = new HashSet<String>();
-			paras.addAll(runfileObjList.get(0).get(q).keySet());
-			for(int i=1; i<runfileObjList.size(); i++)
-				paras.addAll(runfileObjList.get(i).get(q).keySet());
+			//paras.addAll(runfileObjList.get(0).get(q).keySet());
+			for(int i=0; i<runfileObjList.size(); i++)
+				if(runfileObjList.get(i).containsKey(q))
+					paras.addAll(runfileObjList.get(i).get(q).keySet());
 			for(String para:paras){
 				String runfileLine = "";
 				double combinedScore = 0;

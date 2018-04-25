@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 
 /*
@@ -47,6 +48,10 @@ public class CombineRunFilesToRLibFetFile {
 	public void writeFetFile(Properties p, String runfilesDir, String outputFetFilePath, boolean pageLevel) throws Exception{
 		File folderOfRunfiles = new File(runfilesDir);
 		File[] runfiles = folderOfRunfiles.listFiles();
+		Arrays.sort(runfiles);
+		System.out.println("Files to be combined:");
+		for(File f:runfiles)
+			System.out.println(f.getAbsolutePath());
 		HashMap<String, ArrayList<String>> qrels = null;
 		if(pageLevel)
 			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
