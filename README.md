@@ -25,6 +25,7 @@ chmod 755 install.sh run.sh
 ```
 ./install.sh
 ```
+Now run ./run.sh to test the project as described in the Usage section below.
 
 ## Usage
 
@@ -89,60 +90,71 @@ This will map paragraphs in candidate set of a page to the sections using paragr
 ```
 java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm path-to-candidate-set-pagerun-file path-to-output-runfile mode
 ```
+9. -cmb generate Ranklib feature file out of run files and qrels file
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb path-to-runfiles-to-be-combined path-to-output-feature-file pagelevel?false/true
+```
+
+10. -cmbrun generate combined runfile from Rlib model and individual run files
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun folder-path-to-run-files filepath-to-rlib-model filepath-to-output-runfile
+```
+
+##Options in project.properties
 
 Various parameters and options for **_project.properties_** file located inside Mongoose directory: 
 ```
 1. data-dir=path to benchmarkY1train/test directory
 
-2. out-dir=path to output directory where Mongoose outputs will be stored
+2. index-dir=path to lucene index directory
 
-3. index-dir=path to lucene index directory
+3. parafile=paragraph cbor filename
 
-4. parafile=paragraph cbor filename
+4. outline=outline cbor filename for train/test
 
-5. outline=outline cbor filename
+5. art-qrels=article.qrels filename
 
-6. art-qrels=article.qrels filename
+6. top-qrels=top-level.qrels filename
 
-7. top-qrels=top-level.qrels filename
+7. hier-qrels=hierarchical.qrels filename
 
-8. hier-qrels=hierarchical.qrels filename
+8. no-ret=number of paragraphs retrieved during candidate generation
 
-9. trec-runfile=article.qrels compatible run filename
+9. func=space separated options for wordnet similairties used for clustering. valid options ji - Jiang-Conrath, pat - Path, wu - Wu-Palmer, lin - Lin
 
-10. paramap-run=top-level/hierarchical.qrels compatible filename
+10. log-file=not used
 
-11. mode=this controls which modules of Mongoose are to be run and in which order
+11. show-msg=to enable verbose output (yes/no)
+
+12. threads=number of threads for multithreading tasks
+
+13. use-default-poolsize=whether to use default thread pool size (yes/no)
+
+14. glove-file=pretrained glove file to be used
+
+15. plaintextpara=not used
+
+16. parapair-qrels=not used
+
+17. cluster-out-txt=not used
+
+18. sum-method=summarization method, currently only valid option: tfidf
+
+19. sum-map-method=mapping method after summarization, valid options: tfidf/wn
+
+20. curl-path=path to curl script: scripts/curl_command.sh
+
+21. stopfile=filename storing the stopwords
+
+22. qe-method=query expansion method
+
+23. cs-method=BM25
+
+24. search-mode = section-path
+
 ```
-Following options are available for mode
-
-1. -ir = index then rank, 
-
-2. -r = only rank, 
-
-3. -p = process parapair similarity data, 
-
-4. -l = rlib fet file writing, 
-
-5. -c = hac sim cluster, 
-
-6. -pm = para mapper, 
-
-7. -cm = measure clustering
-
-8. -km = kmeans clustering, 
-
-9. -cw = hac word2vec cluster, 
-
-10. -cb = convert cluster data to plain text file
-
-11. -pt = plain text extractor, 
-
-12. -cmb = combine run files and create a feature file for RLib,
-
-13. -sm = summary mapper, 
-
-14. -qe = candidate generation using query expansion
 
 For example: mode=-qe-sm (default) will first generate candidate set using query expansion and then using that generate run file for top-level sections using summarization methods.
 
@@ -184,8 +196,4 @@ qe-method = KNN-PRF
 
 cs-method = LM-DS
 
-search-mode = section-path
-
-## Examples
-
-The default properties generates the candidate set using BM25 and Query Exoansion using RM3 with Pseudo-Relevance Feedback(PRF) and maps paragraphs to section headings using text summarization. If you want to change these settings, for example, Candidate generation with RM3+BM25 and text summarizing with word2vec, change the option "sum-map-method" to "w2v". Also don't forget to change the name of the output file for top level sections in the option "paramap-run" and for the candidate set in the option "trec-run-file" to your preferred name,  otherwise you will overwrite any previous run files. This would generate two run files: one for the candidate set generation and other for the top level sections. You can then evaluate them using trec_eval. If you want to do: Candidate set generation with KNN+BM25 and text summarizing with wordnet. Change the "qe-method" to "KNN-PRF". Also change names of output files as described above. This would again produce run files as descibed above which you can evaluate.  
+search-mode = section-path 
