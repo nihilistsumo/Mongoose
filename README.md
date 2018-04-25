@@ -3,6 +3,8 @@ A class project for CS980
 
 The purpose of this project is to solve the TREC-CAR paragraph task.
 
+Follow the **Installation**  instructions to **install** and **Usage** instructions to **run** the prototype.
+
 ## Installation
 1. Clone this project:
 ```
@@ -25,9 +27,15 @@ chmod 755 install.sh run.sh
 ```
 
 ## Usage
-Running the script **run.sh** tests 7 variations with default settings of our project on train dataset and reports the treceval results. However if you wish to run a single method with custom parameters, you have to run the generated jar file **Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar** with command line arguments. Following is a detailed description of the same.
 
-Available methods, options and their corresponding arguments:
+1. Running the script **run.sh** tests 7 variations with default settings of our project on train dataset and reports the treceval results. 
+
+2. However if you wish to run a single method with custom parameters, you have to run the generated jar file **Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar** with command line arguments. (See details below)
+
+3. The results are stored in the directory **mongoose-results** which is created in the same directory as the one in which you intall the  prototype.
+
+
+### Available methods, options and their corresponding arguments for running jar file:
 
 1. -p calculates wordnet similarity between all paragraph pairs
 
@@ -82,29 +90,29 @@ This will map paragraphs in candidate set of a page to the sections using paragr
 java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -tm path-to-candidate-set-pagerun-file path-to-output-runfile mode
 ```
 
-Also you can change various parameters and options through **_project.properties_** files located inside Mongoose directory.
+Various parameters and options for **_project.properties_** file located inside Mongoose directory: 
 ```
-data-dir=path to benchmarkY1train/test directory
+1. data-dir=path to benchmarkY1train/test directory
 
-out-dir=path to output directory where Mongoose outputs will be stored
+2. out-dir=path to output directory where Mongoose outputs will be stored
 
-index-dir=path to lucene index directory
+3. index-dir=path to lucene index directory
 
-parafile=paragraph cbor filename
+4. parafile=paragraph cbor filename
 
-outline=outline cbor filename
+5. outline=outline cbor filename
 
-art-qrels=article.qrels filename
+6. art-qrels=article.qrels filename
 
-top-qrels=top-level.qrels filename
+7. top-qrels=top-level.qrels filename
 
-hier-qrels=hierarchical.qrels filename
+8. hier-qrels=hierarchical.qrels filename
 
-trec-runfile=article.qrels compatible run filename
+9. trec-runfile=article.qrels compatible run filename
 
-paramap-run=top-level/hierarchical.qrels compatible filename
+10. paramap-run=top-level/hierarchical.qrels compatible filename
 
-mode=this controls which modules of Mongoose are to be run and in which order
+11. mode=this controls which modules of Mongoose are to be run and in which order
 ```
 Following options are available for mode
 
