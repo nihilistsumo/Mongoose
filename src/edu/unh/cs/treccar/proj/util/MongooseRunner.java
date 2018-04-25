@@ -12,6 +12,7 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
+import edu.unh.cs.treccar.proj.qe.QueryIndex;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 import edu.unh.cs.treccar.proj.sum.SummaryMapper;
@@ -139,6 +140,10 @@ public class MongooseRunner {
 					sim = new BM25Similarity();
 				}
 				mh.runQueryExpand(prop, new StandardAnalyzer(), sim);
+			}
+			// -bm25 outputdir outputfile 200 mode method 0.1 
+			else if(args[0].equalsIgnoreCase("-bm25")){
+				mh.runBM25Ret(prop, args[1], args[2], Integer.parseInt(args[3]), args[4], args[5], Float.parseFloat(args[6]));
 			}
 			/*
 			for(String cmd:prop.getProperty("mode").split("-")){

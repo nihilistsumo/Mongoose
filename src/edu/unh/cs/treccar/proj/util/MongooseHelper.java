@@ -35,6 +35,9 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
+import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
 
@@ -47,6 +50,7 @@ import edu.unh.cs.treccar.proj.cluster.CustomKMeansWord2Vec;
 import edu.unh.cs.treccar.proj.cluster.ParaMapper;
 import edu.unh.cs.treccar.proj.prmat.PageRankClusters;
 import edu.unh.cs.treccar.proj.qe.Query;
+import edu.unh.cs.treccar.proj.qe.QueryIndex;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
 import edu.unh.cs.treccar.proj.similarities.LeacockChodorowSimilarity;
@@ -101,6 +105,40 @@ public class MongooseHelper {
 		String mode = p.getProperty("search-mode");
 		Query.Search ob = new Query.Search(p.getProperty("index-dir"), p.getProperty("out-dir"), p.getProperty("data-dir")+"/"+p.getProperty("outline"), p.getProperty("trec-runfile"), p.getProperty("stopfile"), 
 				p.getProperty("glove-dir")+"/"+p.getProperty("glove-file"), Integer.parseInt(p.getProperty("no-ret")), 100, 10, p.getProperty("qe-method"), p.getProperty("cs-method"), a, s);
+		ob.search(mode);
+	}
+	
+	/*
+	
+	*/
+	public void runBM25Ret(Properties p, String outputDirPath, String outputFilename, int topSearch, String mode, String method, float lambda){
+		Similarity sim = null;
+		String dir = p.getProperty("index-dir");
+		String out_dir = outputDirPath;
+		String outline_file = p.getProperty("data-dir")+"/"+p.getProperty("outline");
+		String out_file = outputFilename;
+		
+		if(method.equals("BM25"))
+		{
+			System.out.println("Using BM25 for candidate set generation");
+			sim = new BM25Similarity();
+		}
+		else if(method.equals("LM-DS"))
+		{
+			System.out.println("Using LM-DS for candidate set generation");
+			sim = new LMDirichletSimilarity();
+		}
+		else if(method.equals("LM-JM"))
+		{
+			System.out.println("Using LM-JM for candidate set generation");
+			sim = new LMJelinekMercerSimilarity(lambda);
+		}
+		else
+		{
+			System.out.println("Wrong similarity metric");
+			System.exit(0);
+		}
+		QueryIndex ob = new QueryIndex(dir, out_dir, outline_file, out_file, topSearch,method,new StandardAnalyzer(), sim);
 		ob.search(mode);
 	}
 	
