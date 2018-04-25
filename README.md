@@ -35,6 +35,27 @@ Now run ./run.sh to test the project as described in the Usage section below.
 
 3. The results are stored in the directory **mongoose-results** which is created in the same directory as the one in which you intall the  prototype.
 
+Here are the files that will be generated once the run.sh script is finised.
+
+hacsim-cluster-out-comb-top200-laura-cand-train: Cluster file for HAC with wordnet similarity
+
+hacsim-comb-top200-laura-cand-train-run: Runfile for HAC with wordnet similarity
+
+hacwv-cluster-out-comb-top200-laura-cand-train: Cluster file for HAC with word embedding
+
+hacwv-comb-top200-laura-cand-train-run: Runfile for HAC with word embedding
+
+kmwv-cluster-out-comb-top200-laura-cand-train: Cluster file for KMeans with word embedding
+
+kmwv-comb-top200-laura-cand-train-run: Runfile for KMeans with word embedding
+
+summary-out-comb-top200-laura-cand-train-run: Runfile for Summarization
+
+lda-topic-out-comb-top200-laura-cand-train-run: Runfile for LDA topic modeling
+
+lda-topic-expanded-out-comb-top200-laura-cand-train-run: Runfile for LDA topic modeling with wordnet synonyms 
+
+
 
 ### Available methods, options and their corresponding arguments for running jar file:
 
@@ -209,4 +230,3 @@ summary-out-comb-top200-laura-cand-test-run: Run file for text summarization usi
 lda-topic-expanded-out-comb-top200-laura-cand-test-run: Run file for LDA topic modelling with WordNet synonyms
 
 The run file for benchmarkY1train can be found at: /home/mong/mongoose-hier-train-runfiles
-
