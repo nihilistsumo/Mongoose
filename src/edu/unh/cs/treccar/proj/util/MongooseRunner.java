@@ -89,7 +89,7 @@ public class MongooseRunner {
 			}
 			//Combine run files to produce rank file using trained Rlib model
 			// -cmbrun folder path to run files, filepath to rlib model, filepath to output runfile
-			else if(args[0].equalsIgnoreCase("-cmbrun")){
+			else if(args[0].equalsIgnoreCase("-cmbrun")){ 
 				String runfilesDir = args[1];
 				String rlibModelPath = args[2];
 				String outputRunfilePath = args[3];
