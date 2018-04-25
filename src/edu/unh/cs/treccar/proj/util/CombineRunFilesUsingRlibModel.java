@@ -24,7 +24,7 @@ public class CombineRunFilesUsingRlibModel {
 		File folderOfRunfiles = new File(runfilesDir);
 		File[] runfiles = folderOfRunfiles.listFiles();
 		Arrays.sort(runfiles);
-		System.out.println("Files to be combined:");
+		System.out.println("Files to be combined:"); 
 		for(File f:runfiles)
 			System.out.println(f.getAbsolutePath());
 		MongooseHelper mh = new MongooseHelper(p, "-rf");
