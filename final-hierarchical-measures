@@ -40,12 +40,6 @@ map                       all    0.0168
 Rprec                     all    0.0109
 recip_rank                all    0.0225
 
-
-8. Candidate Set Generation using Query Expansion with entities from DBPedia
-MAP : 0.0567
-Rprec : 0.0985
-recip_rank : 0.3478
-
 9. Weighted PageRank with Common Entities
 map                       all    0.0072
 Rprec                     all    0.0044
@@ -56,3 +50,50 @@ map                       all    0.0083
 Rprec                     all    0.0054
 recip_rank                all    0.0167
 
+------ Candidate sets ----------
+
+
+8. Candidate Set Generation using Query Expansion with entities from DBPedia
+MAP : 0.0567
+Rprec : 0.0985
+recip_rank : 0.3478
+
+11. BM25+(BM25+KNN-INC)+(BM25+KNN-EXT)
+map                       all    0.0877
+Rprec                     all    0.1449
+recip_rank                all    0.4501
+
+12. LM-DS+(LM-DS+KNN-INC)+(LM-DS+KNN-EXT)
+map                       all    0.0933
+Rprec                     all    0.1520
+recip_rank                all    0.4349
+
+13. LM-JM+(LM-JM+KNN-INC)+(LM-JM+KNN-EXT)
+map                       all    0.0699
+Rprec                     all    0.1202
+recip_rank                all    0.3397
+
+11. ALL
+map                       all    0.0988
+Rprec                     all    0.1578
+recip_rank                all    0.4996
+
+12. Shubham cand + laura combined using Rlib
+map                   	all	0.1355
+Rprec                 	all	0.1947
+recip_rank            	all	0.6721
+
+13. Datamuse + BM25
+map                     all     0.0183
+Rprec                   all     0.0332
+recip_rank              all     0.0792
+
+14. Added ConceptNet with DataMuse + BM25
+map                     all     0.0586
+Rprec                   all     0.0999
+recip_rank              all     0.2940
+
+15. DataMuse + BM25 + ConceptNet for hierarchical sections
+map                     all     0.0206
+Rprec                   all     0.0134
+recip_rank              all     0.0275
