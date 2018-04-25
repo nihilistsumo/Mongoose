@@ -87,6 +87,15 @@ public class MongooseRunner {
 					pageLevel = true;
 				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, pageLevel);
 			}
+			//Combine run files to produce rank file using trained Rlib model
+			// -cmbrun folder path to run files, filepath to rlib model, filepath to output runfile
+			else if(args[0].equalsIgnoreCase("-cmbrun")){
+				String runfilesDir = args[1];
+				String rlibModelPath = args[2];
+				String outputRunfilePath = args[3];
+				CombineRunFilesUsingRlibModel cmb = new CombineRunFilesUsingRlibModel();
+				cmb.writeRunFile(prop, runfilesDir, rlibModelPath, outputRunfilePath);
+			}
 			//Produces hierarchical runfiles using summarizer
 			// -sm candidate-run-file-path output-run-file-path
 			else if(args[0].equalsIgnoreCase("-sm")){
