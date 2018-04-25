@@ -114,14 +114,30 @@ public class NamedEntityRecognizer {
         int count3 = 0;
         while (scanner.hasNextLine()) {
         	String[] entries = scanner.nextLine().split(" ");
+        	//ArrayList<String> list = new ArrayList<String>();
+        	for (int i = 0; i < entries.length; i++) {
+        		
+        		if (i!=0 && i % 3 == 0)
+        		{
+        			if (0 < Integer.parseInt(entries[i]) && Integer.parseInt(entries[i]) < 6)
+        			{
+        				count3++;
+        			}
+        		}
+        		
+        	
+        		if (i != 0 && i % 2 == 0)
+        		{
+		        	if (0 < Integer.parseInt(entries[3]) && Integer.parseInt(entries[3]) < 3)
+		        	{
+		        			Clines.add(entries[2]);
+		        			count3++;
+		        	}
+        		
+        		Clines.add(entries[2]);
 
-        	if (0 < Integer.parseInt(entries[3]) && Integer.parseInt(entries[3]) < 3)
-        	{
-        			Clines.add(entries[2]);
-        			count3++;
         	}
         }
-        
         for(Data.Paragraph paragraph: DeserializeData.iterableParagraphs(fileInputStream)) {
         	
         	if(Clines.contains(paragraph.getParaId()))
@@ -133,21 +149,26 @@ public class NamedEntityRecognizer {
 	        	for (Data.ParaBody ParaBody: paragraph.getBodies()) {
 	        		if (ParaBody instanceof Data.ParaLink)
 	        		{
-	        			//out.println(((Data.ParaLink) ParaBody).getAnchorText());
+	        			//System.out.println(((Data.ParaLink) ParaBody).getAnchorText());
 	        		} 
 	        }
         }        
         	
     }   
         String url1 = null;
+        
         List<String> url2_1 = new ArrayList<String>();
         List<String> NamedEntities = new ArrayList<String>();
+        Map<String, Integer> Entitycounts = new HashMap<String, Integer>();
+        int count5 = 0;
         
         for (String item : paragraphs1)
         {
 	        url1 = "https://api.dandelion.eu/datatxt/nex/v1/? text=" + URLEncoder.encode(item, "UTF-8") + "&token=fbebf37590184e668b2784ccc13482e7";
 	        url2_1.add(url1);
         }
+        
+        StringBuilder sb1 = null;
         
         for (String item2 : url2_1)
         {
@@ -160,7 +181,7 @@ public class NamedEntityRecognizer {
                  int responseCode = response.getStatusLine().getStatusCode();
                  BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                  String line = "";
-                 StringBuilder sb1 = new StringBuilder();
+                 sb1 = new StringBuilder();
                  while ((line = rd.readLine()) != null) {
                      sb1.append(line.trim());
                  }
@@ -175,9 +196,12 @@ public class NamedEntityRecognizer {
        	 	 catch (IOException e) {
                  e.printStackTrace();
              }   
- 	
-         }
-        
+       	 
+       	  int count4 = sb1.length();
+       	  String temp = paragraphs1.get(count5);
+          Entitycounts.put(temp, count4);
+      }
+                
         String url = null;
         List<String> url2 = new ArrayList<String>();
         List<String> DbpediaLinks = new ArrayList<String>();
@@ -219,4 +243,5 @@ public class NamedEntityRecognizer {
 
       }
 
+    }
 }
