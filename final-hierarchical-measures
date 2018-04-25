@@ -82,3 +82,18 @@ recip_rank                all    0.4996
 map                   	all	0.1355
 Rprec                 	all	0.1947
 recip_rank            	all	0.6721
+
+13. Datamuse + BM25
+map                     all     0.0183
+Rprec                   all     0.0332
+recip_rank              all     0.0792
+
+14. Added ConceptNet with DataMuse + BM25
+map                     all     0.0586
+Rprec                   all     0.0999
+recip_rank              all     0.2940
+
+15. DataMuse + BM25 + ConceptNet for hierarchical sections
+map                     all     0.0206
+Rprec                   all     0.0134
+recip_rank              all     0.0275
