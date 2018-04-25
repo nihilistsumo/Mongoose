@@ -30,7 +30,7 @@ chmod 755 install.sh run.sh
 
 1. Running the script **run.sh** tests 7 variations with default settings of our project on train dataset and reports the treceval results. 
 
-2. However if you wish to run a single method with custom parameters, you have to run the generated jar file **Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar** with command line arguments. (See details below)
+2. However, if you wish to run a single method with custom parameters, you have to run the generated jar file **Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar** with command line arguments and changing the appropriate variables in the **project.properties** file. (See details below)
 
 3. The results are stored in the directory **mongoose-results** which is created in the same directory as the one in which you intall the  prototype.
 
