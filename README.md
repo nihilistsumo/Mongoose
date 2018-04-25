@@ -117,14 +117,21 @@ Following options are available for mode
 For example: mode=-qe-sm (default) will first generate candidate set using query expansion and then using that generate run file for top-level sections using summarization methods.
 
 Following options are available for query expansion ( option: "qe-method" in project.properties) :
+
 RM3 = Relevance Model 3 (default)
+
 KNN-PRF = KNN with Pseudo-Relevance Feedback (PRF)
+
 KNN-INC = Incremental KNN with PRF
+
 KNN-EXT = KNN with extended query set with PRF
 
 Each of the above query expansion methods can work on either page level, section level, or top-level section queries (option: "search-mode" in project.properties). The available modes are:
+
 page-title: Searches for page titles as queries (default)
+
 section-path : Searches for section headings as queries
+
 toplevel-sections : Searches for toplevel sections as queries
 
 ## Examples
