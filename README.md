@@ -126,9 +126,9 @@ java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun folde
 11. -qe generate candidate set/section level runfile using query expansion
 
 ```
-java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -bm25 output-directory-path output-runfile-name
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -qe output-directory-path output-runfile-name
 ```
-Also you have to edit qe-method, cs-method and search method in project.properties according to your needs
+Also you have to edit qe-method, cs-method and search method in project.properties according to your needs (See details below). 
 
 12. -bm25 map paragraphs to sections using BM25 (Baseline)
 
