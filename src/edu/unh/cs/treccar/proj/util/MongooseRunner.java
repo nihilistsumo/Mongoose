@@ -115,7 +115,8 @@ public class MongooseRunner {
 				TopicModelMapper tmm = new TopicModelMapper();
 				tmm.map(prop, candSetFilePath, outputRunfilePath, mode, parallel);
 			}
-			
+			//Query expand methods
+			// -qe output-dir-path output-runfilename
 			else if(args[0].equalsIgnoreCase("-qe")){
 				Similarity sim = null;
 				if(prop.getProperty("cs-method").equals("BM25"))
@@ -139,7 +140,7 @@ public class MongooseRunner {
 					System.out.println("Using BM25 as default for candidate set generation");
 					sim = new BM25Similarity();
 				}
-				mh.runQueryExpand(prop, new StandardAnalyzer(), sim);
+				mh.runQueryExpand(prop, args[1], args[2], new StandardAnalyzer(), sim);
 			}
 			// -bm25 outputdir outputfile 200 mode method 0.1 
 			else if(args[0].equalsIgnoreCase("-bm25")){

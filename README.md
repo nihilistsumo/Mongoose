@@ -123,7 +123,14 @@ java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb path-to-
 java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun folder-path-to-run-files filepath-to-rlib-model filepath-to-output-runfile
 ```
 
-11. -bm25 map paragraphs to sections using BM25 (Baseline)
+11. -qe generate candidate set/section level runfile using query expansion
+
+```
+java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -bm25 output-directory-path output-runfile-name
+```
+Also you have to edit qe-method, cs-method and search method in project.properties according to your needs
+
+12. -bm25 map paragraphs to sections using BM25 (Baseline)
 
 ```
 java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -bm25 output-directory-path output-runfile-name number-of-retrieved mode?section-path/page-title/top-level-sections BM25 0.1
