@@ -128,8 +128,7 @@ java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun folde
 ```
 java -jar target/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -bm25 output-directory-path output-runfile-name number-of-retrieved mode?section-path/page-title/top-level-sections BM25 0.1
 ```
-
-##Options in project.properties
+## Options in project.properties
 
 Various parameters and options for **_project.properties_** file located inside Mongoose directory: 
 ```
