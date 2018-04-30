@@ -34,7 +34,7 @@ public class MongooseRunner {
 				String simDataOutFilePath = args[2];
 				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
 			}
-			//To create rlib feature file from hier qrels and simdata file
+			//To create rlib feature file from hier qrels and simdata file 
 			// -rl simdata-path rlib-fet-file-out-path 
 			else if(args[0].equalsIgnoreCase("-rl")) {
 				RLibFileWriterForCluster rlib = new RLibFileWriterForCluster(mh);
