@@ -24,7 +24,7 @@ public class MongooseRunner {
 		// TODO Auto-generated method stub
 		try {
 			Properties prop = new Properties();
-			prop.load(new FileInputStream(new File("project.properties")));
+			prop.load(new FileInputStream(new File("project.properties"))); 
 			MongooseHelper mh = new MongooseHelper(prop, args[0]);
 			
 			//To process similarity data between para pair
