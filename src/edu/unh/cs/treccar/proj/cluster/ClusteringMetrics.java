@@ -112,8 +112,14 @@ public class ClusteringMetrics {
 			}
 		}
 		w = 1.0/candParaIDs.size();
-		for(String pid:candParaIDs)
-			bCubedRec+=w*(double)getCorrectsInCluster(pid, trueParaClMap, candidateParaClMap)/getNumRet(pid, trueParaClMap, candParaIDs);
+		for(String pid:candParaIDs) {
+			int corrects = getCorrectsInCluster(pid, trueParaClMap, candidateParaClMap);
+			int ret = getNumRet(pid, trueParaClMap, candParaIDs);
+			if(corrects!=ret)
+				System.out.println(pid+" -> corrects = "+corrects+", ret = "+ret);
+			double recFori = (double)corrects/ret;
+			bCubedRec+=w*recFori;
+		}
 		return bCubedRec;
 	}
 	
@@ -127,8 +133,8 @@ public class ClusteringMetrics {
 			if(trueParaClMap.get(pid).equalsIgnoreCase(tLabel))
 				trueCluster.add(pid);
 		}
-		for(String pid:candParaIDs) {
-			if(trueCluster.contains(pid))
+		for(String pid:trueCluster) {
+			if(candParaIDs.contains(pid))
 				result++;
 		}
 		return result;
@@ -333,5 +339,22 @@ public class ClusteringMetrics {
 			}
 			System.out.println();
 		}
+	}
+	
+	public static void main(String[] args) {
+		ArrayList<String> c1 = new ArrayList<String>();
+		ArrayList<String> c2 = new ArrayList<String>();
+		ArrayList<String> t1 = new ArrayList<String>();
+		ArrayList<String> t2 = new ArrayList<String>();
+		c1.add("1");c1.add("5");c1.add("6");c1.add("7");c1.add("2");
+		c2.add("3");c2.add("4");
+		t1.add("1");t1.add("2");t1.add("3");t1.add("4");
+		t2.add("5");t2.add("6");t2.add("7");
+		ArrayList<ArrayList<String>> c = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> t = new ArrayList<ArrayList<String>>();
+		c.add(c1);c.add(c2);t.add(t1);t.add(t2);
+		ClusteringMetrics cm = new ClusteringMetrics();
+		System.out.println("bcubed Precision = "+cm.bCubedPrecision(t, c, false));
+		System.out.println("bcubed Recall = "+cm.bCubedRecall(t, c, false));
 	}
 }
