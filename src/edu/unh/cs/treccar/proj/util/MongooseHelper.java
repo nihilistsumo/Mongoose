@@ -409,22 +409,29 @@ public class MongooseHelper {
 	public void runClusteringMeasure(String clusterFilePath) throws FileNotFoundException, IOException, ClassNotFoundException{
 		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clusterFilePath)));
 		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
-		double rand, fmeasure, meanRand = 0, meanF = 0;
+		boolean verbose = false;
+		double rand, bcubedPrec, bcubedRec, meanRand = 0, meanPrec = 0, meanRec = 0;
 		int count = 0;
 		for(String pageid:candClusters.keySet()){
+			/*
 			ClusteringMetrics cm = new ClusteringMetrics(DataUtilities.getGTClusters(
 					pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), false);
-			rand = cm.getAdjRAND();
-			fmeasure = cm.fMeasure();
+					*/
+			ClusteringMetrics cm = new ClusteringMetrics();
+			rand = cm.getAdjRAND(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedPrec = cm.bCubedPrecision(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedRec = cm.bCubedRecall(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
 			meanRand+=rand;
-			meanF+=fmeasure;
+			meanPrec+=bcubedPrec;
+			meanRec+=bcubedRec;
 			count++;
 			//System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
-			System.out.println(pageid+": Adj RAND = "+rand);
+			System.out.println(pageid+": Adj RAND = "+rand+", bcubedPrecision = "+bcubedPrec+", bcubedRecall = "+bcubedRec);
 		}
 		meanRand/=count;
-		meanF/=count;
-		System.out.println("Mean Adj RAND = "+meanRand);
+		meanPrec/=count;
+		meanRec/=count;
+		System.out.println("Mean Adj RAND = "+meanRand+", mean bcubedPrecision = "+meanPrec+", mean bcubedRecall = "+meanRec);
 	}
 	
 	public void runParaMapper(String clusterFilePath, String outputRunfilePath){

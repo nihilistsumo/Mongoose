@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ClusteringMetrics {
+	/*
 	ArrayList<ArrayList<String>> trueClusters;
 	ArrayList<ArrayList<String>> candidateClusters;
-	ArrayList<String> paraIDs;
+	ArrayList<String> relParaIDs;
 	HashMap<String, String> trueParaClMap;
 	HashMap<String, String> candidateParaClMap;
 	boolean detailed;
@@ -14,16 +15,16 @@ public class ClusteringMetrics {
 	public ClusteringMetrics(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails){
 		this.trueClusters = trueC;
 		this.candidateClusters = candC;
-		this.paraIDs = new ArrayList<String>();
+		this.relParaIDs = new ArrayList<String>();
 		for(ArrayList<String> c:trueC){
 			for(String p:c){
-				if(!paraIDs.contains(p))
-					paraIDs.add(p);
+				if(!relParaIDs.contains(p))
+					relParaIDs.add(p);
 			}
 		}
 		this.trueParaClMap = new HashMap<String, String>();
 		this.candidateParaClMap = new HashMap<String, String>();
-		for(String pid:this.paraIDs){
+		for(String pid:this.relParaIDs){
 			for(int i=0;i<trueClusters.size();i++){
 				if(trueClusters.get(i).contains(pid))
 					trueParaClMap.put(pid, "t"+i);
@@ -35,18 +36,138 @@ public class ClusteringMetrics {
 		}
 		this.detailed = printDetails;
 	}
+	*/
 	
-	public double getAdjRAND(){
-		double rand = this.calculateRandIndex(candidateClusters, trueClusters);
+	public double getAdjRAND(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails){
+		double rand = this.calculateRandIndex(candC, trueC, printDetails);
 		return rand;
 	}
 	
-	public double bCubed(){
-		double b = 0.0;
-		
-		return b;
+	public double bCubedPrecision(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails){
+		double bCubedPrec = 0.0;
+		double w = 0.0;
+		HashMap<String, String> trueParaClMap = new HashMap<String, String>();
+		HashMap<String, String> candidateParaClMap = new HashMap<String, String>();
+		ArrayList<String> relParaIDs = new ArrayList<String>();
+		for(ArrayList<String> c:trueC){
+			for(String p:c){
+				if(!relParaIDs.contains(p))
+					relParaIDs.add(p);
+			}
+		}
+		ArrayList<String> candParaIDs = new ArrayList<String>();
+		for(ArrayList<String> c:candC){
+			for(String p:c){
+				if(!candParaIDs.contains(p))
+					candParaIDs.add(p);
+			}
+		}
+		for(String pid:relParaIDs){
+			for(int i=0;i<trueC.size();i++){
+				if(trueC.get(i).contains(pid))
+					trueParaClMap.put(pid, "t"+i);
+			}
+		}
+		for(String pid:candParaIDs){
+			for(int i=0;i<candC.size();i++){
+				if(candC.get(i).contains(pid))
+					candidateParaClMap.put(pid, "c"+i);
+			}
+		}
+		w = 1.0/candParaIDs.size();
+		for(String pid:candParaIDs)
+			bCubedPrec+=w*(double)getCorrectsInCluster(pid, trueParaClMap, candidateParaClMap)/getClusterSize(pid, trueParaClMap, candidateParaClMap);
+		return bCubedPrec;
 	}
 	
+	public double bCubedRecall(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails){
+		double bCubedRec = 0.0;
+		double w = 0.0;
+		HashMap<String, String> trueParaClMap = new HashMap<String, String>();
+		HashMap<String, String> candidateParaClMap = new HashMap<String, String>();
+		ArrayList<String> relParaIDs = new ArrayList<String>();
+		for(ArrayList<String> c:trueC){
+			for(String p:c){
+				if(!relParaIDs.contains(p))
+					relParaIDs.add(p);
+			}
+		}
+		ArrayList<String> candParaIDs = new ArrayList<String>();
+		for(ArrayList<String> c:candC){
+			for(String p:c){
+				if(!candParaIDs.contains(p))
+					candParaIDs.add(p);
+			}
+		}
+		for(String pid:relParaIDs){
+			for(int i=0;i<trueC.size();i++){
+				if(trueC.get(i).contains(pid))
+					trueParaClMap.put(pid, "t"+i);
+			}
+		}
+		for(String pid:candParaIDs){
+			for(int i=0;i<candC.size();i++){
+				if(candC.get(i).contains(pid))
+					candidateParaClMap.put(pid, "c"+i);
+			}
+		}
+		w = 1.0/candParaIDs.size();
+		for(String pid:candParaIDs)
+			bCubedRec+=w*(double)getCorrectsInCluster(pid, trueParaClMap, candidateParaClMap)/getNumRet(pid, trueParaClMap, candParaIDs);
+		return bCubedRec;
+	}
+	
+	private int getNumRet(String i, HashMap<String, String> trueParaClMap, ArrayList<String> candParaIDs) {
+		int result = 0;
+		if(!trueParaClMap.keySet().contains(i))
+			return 1;
+		String tLabel = trueParaClMap.get(i);
+		ArrayList<String> trueCluster = new ArrayList<String>();
+		for(String pid:trueParaClMap.keySet()) {
+			if(trueParaClMap.get(pid).equalsIgnoreCase(tLabel))
+				trueCluster.add(pid);
+		}
+		for(String pid:candParaIDs) {
+			if(trueCluster.contains(pid))
+				result++;
+		}
+		return result;
+	}
+	
+	private int getCorrectsInCluster(String i, HashMap<String, String> trueParaClMap, HashMap<String, String> candidateParaClMap) {
+		int result = 0;
+		if(!trueParaClMap.keySet().contains(i))
+			return 1;
+		String cLabel = candidateParaClMap.get(i);
+		String tLabel = trueParaClMap.get(i);
+		ArrayList<String> candCluster = new ArrayList<String>();
+		ArrayList<String> trueCluster = new ArrayList<String>();
+		for(String pid:trueParaClMap.keySet()) {
+			if(trueParaClMap.get(pid).equalsIgnoreCase(tLabel))
+				trueCluster.add(pid);
+		}
+		for(String pid:candidateParaClMap.keySet()) {
+			if(candidateParaClMap.get(pid).equalsIgnoreCase(cLabel))
+				candCluster.add(pid);
+		}
+		for(String pid:candCluster) {
+			if(trueCluster.contains(pid))
+				result++;
+		}
+		return result;
+	}
+	
+	private int getClusterSize(String i, HashMap<String, String> trueParaClMap, HashMap<String, String> candidateParaClMap) {
+		String cLabel = candidateParaClMap.get(i);
+		ArrayList<String> candCluster = new ArrayList<String>();
+		for(String pid:candidateParaClMap.keySet()) {
+			if(candidateParaClMap.get(pid).equalsIgnoreCase(cLabel))
+				candCluster.add(pid);
+		}
+		return candCluster.size();
+	}
+	
+	/*
 	public double fMeasure(){
 		double f = 0.0;
 		double[] precRec = pairPrecisionRecall();
@@ -70,14 +191,14 @@ public class ClusteringMetrics {
 		// stats[4] = {tp, tn, fp, fn}
 		int[] stats = {0,0,0,0};
 		String p1, p2;
-		if(trueParaClMap.keySet().containsAll(paraIDs) && 
-				paraIDs.containsAll(trueParaClMap.keySet()) &&
-				candidateParaClMap.keySet().containsAll(paraIDs) &&
-				paraIDs.containsAll(candidateParaClMap.keySet())){
-			for(int i=0; i<this.paraIDs.size()-1; i++){
-				for(int j=i+1; j<this.paraIDs.size(); j++){
-					p1 = this.paraIDs.get(i);
-					p2 = this.paraIDs.get(j);
+		if(trueParaClMap.keySet().containsAll(relParaIDs) && 
+				relParaIDs.containsAll(trueParaClMap.keySet()) &&
+				candidateParaClMap.keySet().containsAll(relParaIDs) &&
+				relParaIDs.containsAll(candidateParaClMap.keySet())){
+			for(int i=0; i<this.relParaIDs.size()-1; i++){
+				for(int j=i+1; j<this.relParaIDs.size(); j++){
+					p1 = this.relParaIDs.get(i);
+					p2 = this.relParaIDs.get(j);
 					if(this.trueParaClMap.get(p1).equalsIgnoreCase(this.trueParaClMap.get(p2))){
 						//same cluster in true
 						if(this.candidateParaClMap.get(p1).equalsIgnoreCase(this.candidateParaClMap.get(p2))){
@@ -108,8 +229,9 @@ public class ClusteringMetrics {
 		}
 		return stats;
 	}
+	*/
 	
-	public double calculateRandIndex(ArrayList<ArrayList<String>> candidateClusters, ArrayList<ArrayList<String>> gtClusters){
+	public double calculateRandIndex(ArrayList<ArrayList<String>> candidateClusters, ArrayList<ArrayList<String>> gtClusters, boolean detailed){
 		//candidateClusters will be map between cluster labels and cluster of para IDs
 		//String resultString = "";
 		//HashMap<String, ArrayList<String>> correct = this.groundTruth;
@@ -140,20 +262,20 @@ public class ClusteringMetrics {
 				contingencyMatrix[i][j] = matchCount;
 			}
 		}
-		if(this.detailed)
+		if(detailed)
 			printContingencyMatrix(contingencyMatrix);
-		if((new Double(this.computeRand(contingencyMatrix))).isNaN()) {
+		if((new Double(this.computeRand(contingencyMatrix, detailed))).isNaN()) {
 			//System.out.println("Adjusted Rand index could not be computed!");
 			return 0.0;
 		}
 		else {
-			randIndex = this.computeRand(contingencyMatrix);
+			randIndex = this.computeRand(contingencyMatrix, detailed);
 			//System.out.println("Calculated RAND index: "+randIndex);
 			return randIndex;
 		}
 	}
 	
-	private double computeRand(int[][] contMat){
+	private double computeRand(int[][] contMat, boolean detailed){
 		double score = 0.0;
 		int sumnij=0, sumni=0, sumnj=0, n=0, nC2=0, nrow=0, ncol=0;		
 		ncol = contMat[0].length;
