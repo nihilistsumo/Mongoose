@@ -51,6 +51,7 @@ import edu.unh.cs.treccar.proj.cluster.ParaMapper;
 import edu.unh.cs.treccar.proj.prmat.PageRankClusters;
 import edu.unh.cs.treccar.proj.qe.Query;
 import edu.unh.cs.treccar.proj.qe.QueryIndex;
+import edu.unh.cs.treccar.proj.rank.LuceneIndexer;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
 import edu.unh.cs.treccar.proj.similarities.LeacockChodorowSimilarity;
@@ -86,6 +87,16 @@ public class MongooseHelper {
 		else
 			this.nThreads = Integer.parseInt(this.p.getProperty("threads"));
 		System.out.println("Thread pool size "+this.nThreads);
+	}
+	
+	public void index(String indexDirPath, String paraCborPath, boolean withEntity) {
+		LuceneIndexer li = new LuceneIndexer();
+		try {
+			li.indexParas(indexDirPath, paraCborPath, withEntity);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void runPRC(String clFilePath, String indexDir, String curlScriptPath, String runfilePath){

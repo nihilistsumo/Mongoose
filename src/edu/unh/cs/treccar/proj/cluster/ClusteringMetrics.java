@@ -115,8 +115,10 @@ public class ClusteringMetrics {
 		for(String pid:candParaIDs) {
 			int corrects = getCorrectsInCluster(pid, trueParaClMap, candidateParaClMap);
 			int ret = getNumRet(pid, trueParaClMap, candParaIDs);
+			/*
 			if(corrects!=ret)
 				System.out.println(pid+" -> corrects = "+corrects+", ret = "+ret);
+				*/
 			double recFori = (double)corrects/ret;
 			bCubedRec+=w*recFori;
 		}

@@ -27,9 +27,21 @@ public class MongooseRunner {
 			prop.load(new FileInputStream(new File("project.properties"))); 
 			MongooseHelper mh = new MongooseHelper(prop, args[0]);
 			
+			//Index paragraphs
+			// -i index-directory-path paragraph-cbor-path with-entity?(entity/Entity/...)
+			if(args[0].equalsIgnoreCase("-i")) {
+				String indexOutPath = args[1];
+				String paraCborPath = args[2];
+				String withEntity = args[3];
+				if(withEntity.startsWith("ent")||withEntity.startsWith("Ent")||withEntity.startsWith("ENT"))
+					mh.index(indexOutPath, paraCborPath, true);
+				else
+					mh.index(indexOutPath, paraCborPath, false);
+			}
+			
 			//To process similarity data between para pair
 			// -p candidate-run-file-path parasim-out-file-path
-			if(args[0].equalsIgnoreCase("-p")) {
+			else if(args[0].equalsIgnoreCase("-p")) {
 				String candSetFilePath = args[1];
 				String simDataOutFilePath = args[2];
 				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
