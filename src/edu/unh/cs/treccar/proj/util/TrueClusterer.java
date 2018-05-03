@@ -49,7 +49,24 @@ public class TrueClusterer {
 				}
 			}
 			resultCluster.put(page, trueClusters);
-			resultCluster.get(page).add(negCluster);
+			
+			
+			int negN = negCluster.size()/resultCluster.get(page).size();
+			int negClustIndex = 0;
+			for(int i=0; i<resultCluster.get(page).size(); i++) {
+				for(int j=0; j<negN; j++) {
+					resultCluster.get(page).get(i).add(negCluster.get(negClustIndex));
+					negClustIndex++;
+				}
+			}
+			int i=0;
+			while(negClustIndex<negCluster.size()) {
+				resultCluster.get(page).get(i).add(negCluster.get(negClustIndex));
+				negClustIndex++;
+			}
+			//resultCluster.get(page).add(negCluster);
+			
+			
 		});
 		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(clusterOutPath)));
 		oos.writeObject(resultCluster);
@@ -71,7 +88,7 @@ public class TrueClusterer {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			TrueClusterer tc = new TrueClusterer();
-			tc.cluster(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-truecluster");
+			tc.cluster(p, "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-page-run", "/home/sumanta/Documents/Mongoose-data/Mongoose-results/comb-top200-laura-cand-train-dist-truecluster");
 			//sm.map(p);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

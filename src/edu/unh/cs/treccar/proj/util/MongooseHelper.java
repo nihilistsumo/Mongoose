@@ -421,7 +421,7 @@ public class MongooseHelper {
 		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clusterFilePath)));
 		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
 		boolean verbose = false;
-		double rand, bcubedPrec, bcubedRec, meanRand = 0, meanPrec = 0, meanRec = 0;
+		double rand, bcubedPrec, bcubedRec, bcubedF, meanRand = 0, meanPrec = 0, meanRec = 0, meanF = 0;
 		int count = 0;
 		for(String pageid:candClusters.keySet()){
 			/*
@@ -432,17 +432,23 @@ public class MongooseHelper {
 			rand = cm.getAdjRAND(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
 			bcubedPrec = cm.bCubedPrecision(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
 			bcubedRec = cm.bCubedRecall(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedF = 2*bcubedPrec*bcubedRec/(bcubedPrec+bcubedRec);
 			meanRand+=rand;
+			
 			meanPrec+=bcubedPrec;
 			meanRec+=bcubedRec;
+			
+			meanF+=bcubedF;
 			count++;
 			//System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
-			System.out.println(pageid+": Adj RAND = "+rand+", bcubedPrecision = "+bcubedPrec+", bcubedRecall = "+bcubedRec);
+			System.out.println(pageid+": Adj RAND = "+rand+", bcubedPrec = "+bcubedPrec+", bcubedRec = "+bcubedRec+", bcubedF = "+bcubedF);
 		}
+		
 		meanRand/=count;
 		meanPrec/=count;
+		meanF/=count;
 		meanRec/=count;
-		System.out.println("Mean Adj RAND = "+meanRand+", mean bcubedPrecision = "+meanPrec+", mean bcubedRecall = "+meanRec);
+		System.out.println("Mean Adj RAND = "+meanRand+", mean bcubedPrec = "+meanPrec+", mean bcubedRec = "+meanRec+", mean bcubedF = "+meanF);
 	}
 	
 	public void runParaMapper(String clusterFilePath, String outputRunfilePath){

@@ -43,7 +43,15 @@ public class ClusteringMetrics {
 		return rand;
 	}
 	
-	public double bCubedPrecision(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails){
+	public double getBcubedFmeasure(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails) {
+		double f = 0;
+		double prec = bCubedPrecision(trueC, candC, printDetails);
+		double rec = bCubedRecall(trueC, candC, printDetails);
+		f = 2*prec*rec/(prec+rec);
+		return f;
+	}
+	
+	public double bCubedPrecision(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails) {
 		double bCubedPrec = 0.0;
 		double w = 0.0;
 		HashMap<String, String> trueParaClMap = new HashMap<String, String>();
@@ -62,6 +70,14 @@ public class ClusteringMetrics {
 					candParaIDs.add(p);
 			}
 		}
+		
+		ArrayList<String> nonRelParaIDs = new ArrayList<String>();
+		for(String p:candParaIDs) {
+			if(!relParaIDs.contains(p))
+				nonRelParaIDs.add(p);
+		}
+		trueC.add(nonRelParaIDs);
+		
 		for(String pid:relParaIDs){
 			for(int i=0;i<trueC.size();i++){
 				if(trueC.get(i).contains(pid))
@@ -99,6 +115,14 @@ public class ClusteringMetrics {
 					candParaIDs.add(p);
 			}
 		}
+		
+		ArrayList<String> nonRelParaIDs = new ArrayList<String>();
+		for(String p:candParaIDs) {
+			if(!relParaIDs.contains(p))
+				nonRelParaIDs.add(p);
+		}
+		trueC.add(nonRelParaIDs);
+		
 		for(String pid:relParaIDs){
 			for(int i=0;i<trueC.size();i++){
 				if(trueC.get(i).contains(pid))
