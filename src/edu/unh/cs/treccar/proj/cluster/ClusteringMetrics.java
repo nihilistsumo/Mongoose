@@ -51,6 +51,11 @@ public class ClusteringMetrics {
 		return f;
 	}
 	
+	/*
+	 * While calculating bcubed measures, if there are any non-relevant paragraphs in the page level then we
+	 * include them in a separate 'non-relevant' cluster from all the relevant ones and calculate accordingly
+	 */
+	
 	public double bCubedPrecision(ArrayList<ArrayList<String>> trueC, ArrayList<ArrayList<String>> candC, boolean printDetails) {
 		double bCubedPrec = 0.0;
 		double w = 0.0;
@@ -78,7 +83,7 @@ public class ClusteringMetrics {
 		}
 		trueC.add(nonRelParaIDs);
 		
-		for(String pid:relParaIDs){
+		for(String pid:candParaIDs){
 			for(int i=0;i<trueC.size();i++){
 				if(trueC.get(i).contains(pid))
 					trueParaClMap.put(pid, "t"+i);
@@ -123,7 +128,7 @@ public class ClusteringMetrics {
 		}
 		trueC.add(nonRelParaIDs);
 		
-		for(String pid:relParaIDs){
+		for(String pid:candParaIDs){
 			for(int i=0;i<trueC.size();i++){
 				if(trueC.get(i).contains(pid))
 					trueParaClMap.put(pid, "t"+i);
