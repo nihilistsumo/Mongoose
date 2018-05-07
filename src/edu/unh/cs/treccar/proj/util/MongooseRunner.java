@@ -39,6 +39,15 @@ public class MongooseRunner {
 					mh.index(indexOutPath, paraCborPath, false);
 			}
 			
+			// -r output-runfile top/hier bm25/bool/classic/lmds 200
+			else if(args[0].equalsIgnoreCase("-r")) {
+				String outputRunfilePath = args[1];
+				String level = args[2];
+				String method = args[3];
+				int retNo = Integer.parseInt(args[4]);
+				mh.rank(prop, outputRunfilePath, level, method, retNo);
+			}
+			
 			//To process similarity data between para pair
 			// -p candidate-run-file-path parasim-out-file-path
 			else if(args[0].equalsIgnoreCase("-p")) {
