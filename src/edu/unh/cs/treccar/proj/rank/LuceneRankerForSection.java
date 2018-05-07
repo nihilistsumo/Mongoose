@@ -41,7 +41,7 @@ public class LuceneRankerForSection {
 		//HashMap<String, HashMap<String, Float>> runfileMap = new HashMap<String, HashMap<String, Float>>(); 
 		
 		FileInputStream fis = new FileInputStream(new File(outlinePath));
-		final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis);
+		final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis); 
 		Iterable<Data.Page> pageIterable = ()->pageIt;
 		/*
 		if(level.equalsIgnoreCase("top"))
