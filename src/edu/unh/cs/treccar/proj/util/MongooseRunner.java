@@ -27,9 +27,31 @@ public class MongooseRunner {
 			prop.load(new FileInputStream(new File("project.properties"))); 
 			MongooseHelper mh = new MongooseHelper(prop, args[0]);
 			
+			//Index paragraphs
+			// -i index-directory-path paragraph-cbor-path with-entity?(entity/Entity/...)
+			if(args[0].equalsIgnoreCase("-i")) {
+				String indexOutPath = args[1];
+				String paraCborPath = args[2];
+				String withEntity = args[3];
+				if(withEntity.startsWith("ent")||withEntity.startsWith("Ent")||withEntity.startsWith("ENT"))
+					mh.index(indexOutPath, paraCborPath, true);
+				else
+					mh.index(indexOutPath, paraCborPath, false);
+			}
+			
+			// -r outline-file output-runfile top/hier bm25/bool/classic/lmds 200
+			else if(args[0].equalsIgnoreCase("-r")) {
+				String outline = args[1];
+				String outputRunfilePath = args[2];
+				String level = args[3];
+				String method = args[4];
+				int retNo = Integer.parseInt(args[5]);
+				mh.rank(prop, outputRunfilePath, level, method, retNo, outline);
+			}
+			
 			//To process similarity data between para pair
 			// -p candidate-run-file-path parasim-out-file-path
-			if(args[0].equalsIgnoreCase("-p")) {
+			else if(args[0].equalsIgnoreCase("-p")) {
 				String candSetFilePath = args[1];
 				String simDataOutFilePath = args[2];
 				mh.saveParaSimilarityData(mh.processParaPairData(DataUtilities.getPageParaMapFromRunfile(candSetFilePath)), simDataOutFilePath);
@@ -79,14 +101,12 @@ public class MongooseRunner {
 				mh.runParaMapper(clusterFilePath, outputRunfilePath);
 			}
 			//Combine run files to produce rlib feature file
-			// -cmb runfiles-directory-path fet-file-output-path page-level?true/false
+			// -cmb runfiles-directory-path fet-file-output-path qrels-filename
 			else if(args[0].equalsIgnoreCase("-cmb")){
 				String runfilesDir = args[1];
 				String outputFetFilePath = args[2];
-				boolean pageLevel = false;
-				if(args[3].startsWith("T") || args[3].startsWith("t"))
-					pageLevel = true;
-				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, pageLevel);
+				String qrelsFilename = args[3];
+				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, qrelsFilename);
 			}
 			//Combine run files to produce rank file using trained Rlib model
 			// -cmbrun folder path to run files, filepath to rlib model, filepath to output runfile

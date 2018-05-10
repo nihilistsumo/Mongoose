@@ -60,12 +60,13 @@ public class TopicModelMapper {
 			//ArrayList<String> results = new ArrayList<String>();
 			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(p.getProperty("index-dir")).toPath()))));
 			Analyzer analyzer = new StandardAnalyzer();
-			HashMap<String, HashMap<String, Double>> rankResult = new HashMap<String, HashMap<String, Double>>();
+			//HashMap<String, HashMap<String, Double>> rankResult = new HashMap<String, HashMap<String, Double>>();
 			boolean isParallel = false;
 			if(parallel>0)
 				isParallel = true;
 			StreamSupport.stream(pageSecMap.keySet().spliterator(), isParallel).forEach(page -> { 
 				try {
+					HashMap<String, HashMap<String, Double>> rankResult = new HashMap<String, HashMap<String, Double>>();
 					QueryParser qp = new QueryParser("paraid", analyzer);
 					ArrayList<String> paraIDsInPage = pageParaMap.get(page);
 					ArrayList<String> secIDsInPage = pageSecMap.get(page);
@@ -86,8 +87,13 @@ public class TopicModelMapper {
 					model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
 					model.setNumIterations(ITERATIONS);
 					model.estimate();
-					rankResult.putAll(this.rankUsingLDA(paraIList, secIList, model));
-					
+					rankResult = this.rankUsingLDA(paraIList, secIList, model);
+					for(String sec:rankResult.keySet()) {
+						for(String para:rankResult.get(sec).keySet()) {
+							//System.out.println(q+" "+para+" "+rankResult.get(q).get(para));
+							bw.write(sec+" Q0 "+para+" 0 "+rankResult.get(sec).get(para)+" TOPIC-MODEL\n");
+						}
+					}
 					System.out.println(page+" done");
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -97,13 +103,14 @@ public class TopicModelMapper {
 			/*
 			for(String s:results)
 				bw.write(s);
-				*/
+			
 			for(String sec:rankResult.keySet()) {
 				for(String para:rankResult.get(sec).keySet()) {
 					//System.out.println(q+" "+para+" "+rankResult.get(q).get(para));
 					bw.write(sec+" Q0 "+para+" 0 "+rankResult.get(sec).get(para)+" TOPIC-MODEL\n");
 				}
 			}
+			*/
 			bw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

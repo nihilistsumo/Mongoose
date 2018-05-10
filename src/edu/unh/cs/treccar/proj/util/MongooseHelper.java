@@ -51,6 +51,8 @@ import edu.unh.cs.treccar.proj.cluster.ParaMapper;
 import edu.unh.cs.treccar.proj.prmat.PageRankClusters;
 import edu.unh.cs.treccar.proj.qe.Query;
 import edu.unh.cs.treccar.proj.qe.QueryIndex;
+import edu.unh.cs.treccar.proj.rank.LuceneIndexer;
+import edu.unh.cs.treccar.proj.rank.LuceneRankerForSection;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
 import edu.unh.cs.treccar.proj.similarities.LeacockChodorowSimilarity;
@@ -86,6 +88,27 @@ public class MongooseHelper {
 		else
 			this.nThreads = Integer.parseInt(this.p.getProperty("threads"));
 		System.out.println("Thread pool size "+this.nThreads);
+	}
+	
+	public void index(String indexDirPath, String paraCborPath, boolean withEntity) {
+		LuceneIndexer li = new LuceneIndexer();
+		try {
+			li.indexParas(indexDirPath, paraCborPath, withEntity);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void rank(Properties prop, String outputRunfile, String level, String method, int retNo, String outlineFile) {
+		//Arguments: String indexDirPath, String outlinePath, String outRunPath, String level, String method, int retNo
+		try {
+			LuceneRankerForSection lrs = new LuceneRankerForSection();
+			lrs.rank(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+outlineFile, outputRunfile, level, method, retNo);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void runPRC(String clFilePath, String indexDir, String curlScriptPath, String runfilePath){
@@ -150,10 +173,10 @@ public class MongooseHelper {
 		ob.search(mode);
 	}
 	
-	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, boolean pageLevel){
+	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, String qrelsName){
 		CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
 		try {
-			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, pageLevel);
+			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, qrelsName);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -409,22 +432,35 @@ public class MongooseHelper {
 	public void runClusteringMeasure(String clusterFilePath) throws FileNotFoundException, IOException, ClassNotFoundException{
 		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(clusterFilePath)));
 		HashMap<String, ArrayList<ArrayList<String>>> candClusters = (HashMap<String, ArrayList<ArrayList<String>>>) ois.readObject();
-		double rand, fmeasure, meanRand = 0, meanF = 0;
+		boolean verbose = false;
+		double rand, bcubedPrec, bcubedRec, bcubedF, meanRand = 0, meanPrec = 0, meanRec = 0, meanF = 0;
 		int count = 0;
 		for(String pageid:candClusters.keySet()){
+			/*
 			ClusteringMetrics cm = new ClusteringMetrics(DataUtilities.getGTClusters(
 					pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), false);
-			rand = cm.getAdjRAND();
-			fmeasure = cm.fMeasure();
+					*/
+			ClusteringMetrics cm = new ClusteringMetrics();
+			rand = cm.getAdjRAND(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedPrec = cm.bCubedPrecision(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedRec = cm.bCubedRecall(DataUtilities.getGTClusters(pageid, this.p.getProperty("data-dir")+"/"+this.p.getProperty("hier-qrels")), candClusters.get(pageid), verbose);
+			bcubedF = 2*bcubedPrec*bcubedRec/(bcubedPrec+bcubedRec);
 			meanRand+=rand;
-			meanF+=fmeasure;
+			
+			meanPrec+=bcubedPrec;
+			meanRec+=bcubedRec;
+			
+			meanF+=bcubedF;
 			count++;
 			//System.out.println(pageid+": Adj RAND = "+rand+", fmeasure = "+fmeasure);
-			System.out.println(pageid+": Adj RAND = "+rand);
+			System.out.println(pageid+": Adj RAND = "+rand+", bcubedPrec = "+bcubedPrec+", bcubedRec = "+bcubedRec+", bcubedF = "+bcubedF);
 		}
+		
 		meanRand/=count;
+		meanPrec/=count;
 		meanF/=count;
-		System.out.println("Mean Adj RAND = "+meanRand);
+		meanRec/=count;
+		System.out.println("Mean Adj RAND = "+meanRand+", mean bcubedPrec = "+meanPrec+", mean bcubedRec = "+meanRec+", mean bcubedF = "+meanF);
 	}
 	
 	public void runParaMapper(String clusterFilePath, String outputRunfilePath){

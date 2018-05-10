@@ -10,6 +10,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -301,10 +302,7 @@ public class DataUtilities {
 			final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis);
 			for(int i=0; pageIt.hasNext(); i++){
 				Data.Page page = pageIt.next();
-				ArrayList<String> secIDsInPage = new ArrayList<String>();
-				secIDsInPage.add(page.getPageId());
-				for(Data.Section sec:getAllSections(page))
-					secIDsInPage.add(page.getPageId()+"/"+sec.getHeadingId());
+				ArrayList<String> secIDsInPage = new ArrayList<String>(getAllSectionIDs(page));
 				articleSecMap.put(page.getPageId(), secIDsInPage);
 			}
 		} catch(IOException e){
@@ -313,6 +311,7 @@ public class DataUtilities {
 		return articleSecMap;
 	}
 	
+	/*
 	public static ArrayList<Data.Section> getAllSections(Data.Page page){
 		ArrayList<Data.Section> secList = new ArrayList<Data.Section>();
 		for(Data.Section sec:page.getChildSections())
@@ -329,6 +328,28 @@ public class DataUtilities {
 			secList.add(sec);
 		}
 	}
+	*/
+	
+	private static HashSet<String> getAllSectionIDs(Data.Page page){
+		HashSet<String> secIDList = new HashSet<String>();
+		String parent = page.getPageId();
+		for(Data.Section sec:page.getChildSections())
+			addSectionIDToList(sec, secIDList, parent);
+		return secIDList;
+	}
+	
+	private static void addSectionIDToList(Data.Section sec, HashSet<String> idlist, String parent){
+		if(sec.getChildSections() == null || sec.getChildSections().size() == 0){
+			idlist.add(parent+"/"+sec.getHeadingId());
+		}
+		else{
+			idlist.add(parent+"/"+sec.getHeadingId());
+			parent = parent+"/"+sec.getHeadingId();
+			for(Data.Section child:sec.getChildSections())
+				addSectionIDToList(child, idlist, parent);
+		}
+	}
+	
 	// Converts arraylist of para objects into their corresponding para id array
 	public static ArrayList<String> getOrderedParaIDArray(ArrayList<Data.Paragraph> paras){
 		ArrayList<String> ids = new ArrayList<String>(paras.size());

@@ -345,13 +345,6 @@ public class LuceneRanker {
 		}
 	}
 	
-	private ArrayList<Data.Section> getAllSections(Data.Page page){
-		ArrayList<Data.Section> secList = new ArrayList<Data.Section>();
-		for(Data.Section sec:page.getChildSections())
-			addSectionToList(sec, secList);
-		return secList;
-	}
-	
 	private HashSet<String> getAllSectionIDs(Data.Page page){
 		HashSet<String> secIDList = new HashSet<String>();
 		String parent = page.getPageId();
