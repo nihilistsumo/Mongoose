@@ -100,11 +100,11 @@ public class MongooseHelper {
 		}
 	}
 	
-	public void rank(Properties prop, String outputRunfile, String level, String method, int retNo) {
+	public void rank(Properties prop, String outputRunfile, String level, String method, int retNo, String outlineFile) {
 		//Arguments: String indexDirPath, String outlinePath, String outRunPath, String level, String method, int retNo
 		try {
 			LuceneRankerForSection lrs = new LuceneRankerForSection();
-			lrs.rank(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+prop.getProperty("outline"), outputRunfile, level, method, retNo);
+			lrs.rank(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+outlineFile, outputRunfile, level, method, retNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -173,10 +173,10 @@ public class MongooseHelper {
 		ob.search(mode);
 	}
 	
-	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, boolean pageLevel){
+	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, String qrelsName){
 		CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
 		try {
-			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, pageLevel);
+			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, qrelsName);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

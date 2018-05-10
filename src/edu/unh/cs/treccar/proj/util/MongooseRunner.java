@@ -39,13 +39,14 @@ public class MongooseRunner {
 					mh.index(indexOutPath, paraCborPath, false);
 			}
 			
-			// -r output-runfile top/hier bm25/bool/classic/lmds 200
+			// -r outline-file output-runfile top/hier bm25/bool/classic/lmds 200
 			else if(args[0].equalsIgnoreCase("-r")) {
-				String outputRunfilePath = args[1];
-				String level = args[2];
-				String method = args[3];
-				int retNo = Integer.parseInt(args[4]);
-				mh.rank(prop, outputRunfilePath, level, method, retNo);
+				String outline = args[1];
+				String outputRunfilePath = args[2];
+				String level = args[3];
+				String method = args[4];
+				int retNo = Integer.parseInt(args[5]);
+				mh.rank(prop, outputRunfilePath, level, method, retNo, outline);
 			}
 			
 			//To process similarity data between para pair
@@ -100,14 +101,12 @@ public class MongooseRunner {
 				mh.runParaMapper(clusterFilePath, outputRunfilePath);
 			}
 			//Combine run files to produce rlib feature file
-			// -cmb runfiles-directory-path fet-file-output-path page-level?true/false
+			// -cmb runfiles-directory-path fet-file-output-path qrels-filename
 			else if(args[0].equalsIgnoreCase("-cmb")){
 				String runfilesDir = args[1];
 				String outputFetFilePath = args[2];
-				boolean pageLevel = false;
-				if(args[3].startsWith("T") || args[3].startsWith("t"))
-					pageLevel = true;
-				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, pageLevel);
+				String qrelsFilename = args[3];
+				mh.combineRunfilesForRLib(runfilesDir, outputFetFilePath, qrelsFilename);
 			}
 			//Combine run files to produce rank file using trained Rlib model
 			// -cmbrun folder path to run files, filepath to rlib model, filepath to output runfile

@@ -45,18 +45,14 @@ public class CombineRunFilesToRLibFetFile {
 		}
 	}
 	
-	public void writeFetFile(Properties p, String runfilesDir, String outputFetFilePath, boolean pageLevel) throws Exception{
+	public void writeFetFile(Properties p, String runfilesDir, String outputFetFilePath, String qrelsName) throws Exception{
 		File folderOfRunfiles = new File(runfilesDir);
 		File[] runfiles = folderOfRunfiles.listFiles();
 		Arrays.sort(runfiles);
 		System.out.println("Files to be combined:");
 		for(File f:runfiles)
 			System.out.println(f.getAbsolutePath());
-		HashMap<String, ArrayList<String>> qrels = null;
-		if(pageLevel)
-			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("art-qrels"));
-		else
-			qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+p.getProperty("hier-qrels"));
+		HashMap<String, ArrayList<String>> qrels = DataUtilities.getGTMapQrels(p.getProperty("data-dir")+"/"+qrelsName);
 		ArrayList<HashMap<String, HashMap<String, Double>>> runfileObjList = new ArrayList<HashMap<String, HashMap<String, Double>>>();
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFetFilePath)));
 		for(File rf:runfiles) {
