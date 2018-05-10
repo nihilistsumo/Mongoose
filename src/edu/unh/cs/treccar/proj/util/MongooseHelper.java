@@ -173,10 +173,10 @@ public class MongooseHelper {
 		ob.search(mode);
 	}
 	
-	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, String qrelsName){
+	public void combineRunfilesForRLib(String runfilesDir, String outputFetFilePath, String qrels){
 		CombineRunFilesToRLibFetFile rlib = new CombineRunFilesToRLibFetFile();
 		try {
-			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, qrelsName);
+			rlib.writeFetFile(p, runfilesDir, outputFetFilePath, qrels);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
