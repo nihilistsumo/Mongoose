@@ -2,6 +2,7 @@
 
 cvdir=/home/sumanta/Documents/Mongoose-data/Mongoose-results/hier-runs-basic-sim-and-fixed/cv
 jardir=/home/sumanta/git/Mongoose-basic-fix/target
+rlib=~/Softwares
 
 for m in bm25 bool classic lmds
 do
@@ -35,7 +36,7 @@ done
 for fold in {0..4}
 do
 	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb $cvdir/runs/tmp-leave$fold $cvdir/runs/tmp-leave$fold/fet-file false
-	java -jar ~/Softwares/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$fold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$fold-rlib-model
+	java -jar $rlib/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$fold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$fold-rlib-model
 	rm $cvdir/runs/tmp-leave$fold/fet-file
 	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/runs/tmp-leave$fold $cvdir/models/fold$fold-rlib-model $cvdir/comb-runs/fold-$fold-comb-run
 done
