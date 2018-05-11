@@ -117,6 +117,13 @@ public class MongooseRunner {
 				CombineRunFilesUsingRlibModel cmb = new CombineRunFilesUsingRlibModel();
 				cmb.writeRunFile(prop, runfilesDir, rlibModelPath, outputRunfilePath);
 			}
+			//Combine rlib model files to average model file; used to combine cross validation optw of diff folds
+			// -cmboptw folder path to models
+			else if(args[0].equalsIgnoreCase("-cmboptw")){ 
+				String modelsDir = args[1];
+				CombineRlibModel cmb = new CombineRlibModel();
+				cmb.combine(prop, modelsDir);
+			}
 			//Produces hierarchical runfiles using summarizer
 			// -sm candidate-run-file-path output-run-file-path
 			else if(args[0].equalsIgnoreCase("-sm")){

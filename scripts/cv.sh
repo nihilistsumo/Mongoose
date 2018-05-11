@@ -10,6 +10,8 @@ rlib=~/Softwares
 #rlib=/home/sk1105/sumanta
 level=hierarchical
 
+# Generating run files
+
 #for m in bm25 bool classic lmds
 #do
 #	echo "Starting $m"
@@ -21,12 +23,16 @@ level=hierarchical
 #	echo "Finished $m"
 #done
 
+# Creating directories to store stuffs
+
 mkdir $cvdir/runs
 mkdir $cvdir/qrels
 mkdir $cvdir/models
 mkdir $cvdir/comb-runs
 cp $cvdir/*-run $cvdir/runs/
 rm $cvdir/*-run
+
+# Creating leave one qrels and run files
 
 for fold in {0..4}
 do
@@ -47,17 +53,28 @@ do
 	done
 done
 
-	
+# Ranklib	
 
 for fold in {0..4}
 do
 	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb $cvdir/runs/tmp-leave$fold $cvdir/runs/tmp-leave$fold/fet-file $cvdir/qrels/leave$fold.qrels
 	java -jar $rlib/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$fold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$fold-rlib-model
 	rm $cvdir/runs/tmp-leave$fold/fet-file
-	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/runs/tmp-leave$fold $cvdir/models/fold$fold-rlib-model $cvdir/comb-runs/fold-$fold-comb-run
 done
 
-#cat $cvdir/comb-runs/* > $cvdir/comb-runs/cv-comb-run
-#rm $cvdir/comb-runs/fold*-run
+# Combining runfiles using rlib models
+
+for leave in {0..4}
+do
+	mkdir tmp-runs$leave
+	cp $cvdir/runs/fold$leave-*-run $cvdir/tmp-runs$leave
+	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/tmp-runs$leave $cvdir/models/fold$leave-rlib-model $cvdir/comb-runs/fold-$leave-comb-run
+	rm -r $cvdir/tmp-runs$leave
+done
+
+cat $cvdir/comb-runs/* >> $cvdir/comb-runs/cv-comb-run
+rm $cvdir/comb-runs/fold*-run
+
+java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmboptw $cvdir/models
 
 echo "Cross validation complete"
