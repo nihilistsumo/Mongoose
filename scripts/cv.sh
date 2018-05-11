@@ -1,6 +1,7 @@
 #!/bin/bash
 
-trec-dir=/home/sumanta/Documents/Mongoose-data/trec-data/benchmarkY1-train
+#trec-dir=/home/sumanta/Documents/Mongoose-data/trec-data/benchmarkY1-train
+trec-dir=/home/sk1105/sumanta/cs980assign/benchmarkY1/benchmarkY1-train
 #cvdir=/home/sumanta/Documents/Mongoose-data/Mongoose-results/hier-runs-basic-sim-and-fixed/cv
 cvdir=/home/sk1105/sumanta/mongoose-cv/cv-results
 #jardir=/home/sumanta/git/Mongoose-basic-fix/target
@@ -34,7 +35,7 @@ do
 	rm $cvdir/runs/tmp-leave$fold/fold$fold-*-run
 	for f in {0..4}
 	do
-		if[!($f -eq $fold)]
+		if [ ! ( $f -eq $fold ) ]
 		then
 			cat $trec-dir/fold-$f-train.pages.cbor-$level.qrels > $cvdir/qrels/leave$f.qrels
 		fi
