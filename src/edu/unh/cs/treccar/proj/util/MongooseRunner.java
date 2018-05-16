@@ -16,6 +16,7 @@ import edu.unh.cs.treccar.proj.qe.QueryIndex;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 import edu.unh.cs.treccar.proj.sum.SummaryMapper;
+import edu.unh.cs.treccar.proj.tm.ArticleTopicModel;
 import edu.unh.cs.treccar.proj.tm.TopicModelMapper;
 
 public class MongooseRunner {
@@ -47,6 +48,16 @@ public class MongooseRunner {
 				String method = args[4];
 				int retNo = Integer.parseInt(args[5]);
 				mh.rank(prop, outputRunfilePath, level, method, retNo, outline);
+			}
+			
+			// -tmpage paragraph-cbor-path path-for-iList path-for-tm-model path-for-tm-report
+			else if(args[0].equalsIgnoreCase("-tmpage")) {
+				String paraCborPath = args[1];
+				String iListPath = args[2];
+				String tmModelPath = args[3];
+				String tmReportPath = args[4];
+				ArticleTopicModel atm = new ArticleTopicModel();
+				atm.trainModel(paraCborPath, iListPath, tmModelPath, tmReportPath);
 			}
 			
 			//To process similarity data between para pair

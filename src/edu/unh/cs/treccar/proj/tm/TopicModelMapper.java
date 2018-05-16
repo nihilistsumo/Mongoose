@@ -153,7 +153,7 @@ public class TopicModelMapper {
 		double result = 0;
 		for(int i=0; i<p.length; i++){
 			if(q[i]<0.0000001 || p[i]<0.0000001){
-				continue;
+				continue; 
 			}
 			result+=p[i]*Math.log(p[i]/q[i]);
 		}
