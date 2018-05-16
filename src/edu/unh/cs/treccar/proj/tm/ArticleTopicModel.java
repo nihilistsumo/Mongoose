@@ -23,6 +23,7 @@ public class ArticleTopicModel {
 	private final static int ITERATIONS = 1000;
 	private final static int NUM_THREADS_TOPIC_MODEL = 5;
 	
+	/*
 	private void convertParasToIList(String parafilePath, String outputIListPath) throws FileNotFoundException {
 		FileInputStream fis = new FileInputStream(new File(parafilePath));
 		final Iterator<Data.Paragraph> paragraphIterator = DeserializeData.iterParagraphs(fis);
@@ -36,17 +37,41 @@ public class ArticleTopicModel {
 		});
 		iListPara.save(new File(outputIListPath));
 	}
+	*/
 	
 	public void trainModel(String parafilePath, String outputIListPath, String outputModelPath, String modelReportPath) throws IOException {
-		this.convertParasToIList(parafilePath, outputIListPath);
-		InstanceList data = InstanceList.load(new File(outputIListPath));
+		FileInputStream fis = new FileInputStream(new File(parafilePath));
 		ParallelTopicModel model = new ParallelTopicModel(NUM_TOPICS, ALPHA_SUM, BETA);
-		model.addInstances(data);
 		model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
 		model.setNumIterations(ITERATIONS);
+		InstanceList iListPara = new InstanceList(TopicModelMapper.buildPipeForLDA());
+		int count = 0;
+		for(Data.Paragraph p:DeserializeData.iterableParagraphs(fis)) {
+			Instance paraIns = new Instance(p.getTextOnly(), null, p.getParaId(), p.getTextOnly());
+			iListPara.addThruPipe(paraIns);
+			if(iListPara.size()>=10000) {
+				try {
+					count++;
+					System.out.println(10000*count+" paragraphs converted to instances");
+					iListPara.save(new File(outputIListPath+count));
+					model.addInstances(iListPara);
+					model.estimate();
+					model.write(new File(outputModelPath));
+					model.topicXMLReport(new PrintWriter(new File(modelReportPath)), 20);
+					iListPara = new InstanceList(iListPara.getPipe());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		count++;
+		iListPara.save(new File(outputIListPath+count));
+		model.addInstances(iListPara);
 		model.estimate();
 		model.write(new File(outputModelPath));
 		model.topicXMLReport(new PrintWriter(new File(modelReportPath)), 20);
+		System.out.println("Model training complete");
 	}
 
 	public static void main(String[] args) {
