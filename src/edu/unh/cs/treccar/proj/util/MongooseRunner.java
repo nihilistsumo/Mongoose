@@ -57,7 +57,7 @@ public class MongooseRunner {
 				String tmModelPath = args[3];
 				String tmReportPath = args[4];
 				ArticleTopicModel atm = new ArticleTopicModel();
-				atm.trainModel(paraCborPath, iListPath, tmModelPath, tmReportPath);
+				atm.trainModel(paraCborPath, tmModelPath, tmReportPath);
 			}
 			
 			//To process similarity data between para pair

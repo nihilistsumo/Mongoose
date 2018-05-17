@@ -43,7 +43,7 @@ public class ArticleTopicModel {
 	}
 	*/
 	
-	public void trainModel(String parafilePath, String outputIListPath, String outputModelPath, String modelReportPath) throws IOException {
+	public void trainModel(String parafilePath, String outputModelPath, String modelReportPath) throws IOException {
 		FileInputStream fis = new FileInputStream(new File(parafilePath));
 		ParallelTopicModel model = new ParallelTopicModel(NUM_TOPICS, ALPHA_SUM, BETA);
 		model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
@@ -74,7 +74,7 @@ public class ArticleTopicModel {
 			}
 		}
 		count++;
-		iListPara.save(new File(outputIListPath+count));
+		//iListPara.save(new File(outputIListPath+count));
 		model.addInstances(iListPara);
 		model.estimate();
 		//model.write(new File(outputModelPath));
