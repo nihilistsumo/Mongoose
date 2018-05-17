@@ -1,10 +1,14 @@
 package edu.unh.cs.treccar.proj.tm;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.stream.StreamSupport;
@@ -20,7 +24,7 @@ public class ArticleTopicModel {
 	private final static int NUM_TOPICS = 100;
 	private final static double ALPHA_SUM = 1.0;
 	private final static double BETA = 0.01;
-	private final static int ITERATIONS = 1000;
+	private final static int ITERATIONS = 5000;
 	private final static int NUM_THREADS_TOPIC_MODEL = 5;
 	
 	/*
@@ -45,18 +49,22 @@ public class ArticleTopicModel {
 		model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
 		model.setNumIterations(ITERATIONS);
 		InstanceList iListPara = new InstanceList(TopicModelMapper.buildPipeForLDA());
+		File modelFile = new File(outputModelPath);
 		int count = 0;
 		for(Data.Paragraph p:DeserializeData.iterableParagraphs(fis)) {
 			Instance paraIns = new Instance(p.getTextOnly(), null, p.getParaId(), p.getTextOnly());
 			iListPara.addThruPipe(paraIns);
-			if(iListPara.size()>=10000) {
+			if(iListPara.size()>=500000) {
 				try {
 					count++;
-					System.out.println(10000*count+" paragraphs converted to instances");
-					iListPara.save(new File(outputIListPath+count));
+					System.out.println(500000*count+" paragraphs converted to instances");
+					//iListPara.save(new File(outputIListPath+count));
 					model.addInstances(iListPara);
 					model.estimate();
-					model.write(new File(outputModelPath));
+					ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
+					//model.write(new File(outputModelPath));
+					oos.writeObject(model);
+					oos.close();
 					model.topicXMLReport(new PrintWriter(new File(modelReportPath)), 20);
 					iListPara = new InstanceList(iListPara.getPipe());
 				} catch (IOException e) {
@@ -69,7 +77,10 @@ public class ArticleTopicModel {
 		iListPara.save(new File(outputIListPath+count));
 		model.addInstances(iListPara);
 		model.estimate();
-		model.write(new File(outputModelPath));
+		//model.write(new File(outputModelPath));
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
+		oos.writeObject(model);
+		oos.close();
 		model.topicXMLReport(new PrintWriter(new File(modelReportPath)), 20);
 		System.out.println("Model training complete");
 	}
