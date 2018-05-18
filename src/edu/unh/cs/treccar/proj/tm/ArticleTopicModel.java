@@ -51,7 +51,6 @@ public class ArticleTopicModel {
 		model.setNumThreads(numThreads);
 		model.setNumIterations(iter);
 		InstanceList iListPara = new InstanceList(TopicModelMapper.buildPipeForLDA());
-		File modelFile = new File(outputModelPath);
 		int count = 0;
 		for(Data.Paragraph p:DeserializeData.iterableParagraphs(fis)) {
 			Instance paraIns = new Instance(p.getTextOnly(), null, p.getParaId(), p.getTextOnly());
@@ -63,6 +62,7 @@ public class ArticleTopicModel {
 					//iListPara.save(new File(outputIListPath+count));
 					model.addInstances(iListPara);
 					model.estimate();
+					File modelFile = new File(outputModelPath);
 					ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
 					//model.write(new File(outputModelPath));
 					oos.writeObject(model);
@@ -80,6 +80,7 @@ public class ArticleTopicModel {
 		model.addInstances(iListPara);
 		model.estimate();
 		//model.write(new File(outputModelPath));
+		File modelFile = new File(outputModelPath);
 		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
 		oos.writeObject(model);
 		oos.close();
