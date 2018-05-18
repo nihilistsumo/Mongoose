@@ -50,14 +50,18 @@ public class MongooseRunner {
 				mh.rank(prop, outputRunfilePath, level, method, retNo, outline);
 			}
 			
-			// -tmpage paragraph-cbor-path path-for-iList path-for-tm-model path-for-tm-report
+			// -tmpage paragraph-cbor-path path-for-tm-model path-for-tm-report numTopics alphaSum beta numThreads iter
 			else if(args[0].equalsIgnoreCase("-tmpage")) {
 				String paraCborPath = args[1];
-				String iListPath = args[2];
-				String tmModelPath = args[3];
-				String tmReportPath = args[4];
+				String tmModelPath = args[2];
+				String tmReportPath = args[3];
+				int numTopics = Integer.parseInt(args[4]);
+				double alphaSum = Double.parseDouble(args[5]);
+				double beta = Double.parseDouble(args[6]);
+				int numThreads = Integer.parseInt(args[7]);
+				int iter = Integer.parseInt(args[8]);
 				ArticleTopicModel atm = new ArticleTopicModel();
-				atm.trainModel(paraCborPath, tmModelPath, tmReportPath);
+				atm.trainModel(paraCborPath, tmModelPath, tmReportPath, numTopics, alphaSum, beta, numThreads, iter);
 			}
 			
 			//To process similarity data between para pair

@@ -21,11 +21,13 @@ import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
 public class ArticleTopicModel {
 	
+	/*
 	private final static int NUM_TOPICS = 100;
 	private final static double ALPHA_SUM = 1.0;
 	private final static double BETA = 0.01;
 	private final static int ITERATIONS = 5000;
 	private final static int NUM_THREADS_TOPIC_MODEL = 5;
+	*/
 	
 	/*
 	private void convertParasToIList(String parafilePath, String outputIListPath) throws FileNotFoundException {
@@ -43,11 +45,11 @@ public class ArticleTopicModel {
 	}
 	*/
 	
-	public void trainModel(String parafilePath, String outputModelPath, String modelReportPath) throws IOException {
+	public void trainModel(String parafilePath, String outputModelPath, String modelReportPath, int numTopics, double alphaSum, double beta, int numThreads, int iter) throws IOException {
 		FileInputStream fis = new FileInputStream(new File(parafilePath));
-		ParallelTopicModel model = new ParallelTopicModel(NUM_TOPICS, ALPHA_SUM, BETA);
-		model.setNumThreads(NUM_THREADS_TOPIC_MODEL);
-		model.setNumIterations(ITERATIONS);
+		ParallelTopicModel model = new ParallelTopicModel(numTopics, alphaSum, beta);
+		model.setNumThreads(numThreads);
+		model.setNumIterations(iter);
 		InstanceList iListPara = new InstanceList(TopicModelMapper.buildPipeForLDA());
 		File modelFile = new File(outputModelPath);
 		int count = 0;
