@@ -49,12 +49,10 @@ public class ArticleTopicModelReranker {
 				isParallel = true;
 			StreamSupport.stream(pageIterable.spliterator(), isParallel).forEach(page -> { 
 				try {
-					HashMap<String, HashMap<String, Double>> rankResult = new HashMap<String, HashMap<String, Double>>();
 					HashSet<String> secIDsinPage = new HashSet<String>();
-					HashMap<String, Float> retrievedResult = new HashMap<String, Float>();
 					secIDsinPage = this.getAllSectionIDs(page);
 					QueryParser qp = new QueryParser("paraid", analyzer);
-					ArrayList<String> paraIDsInPage = pageParaMap.get(page);
+					ArrayList<String> paraIDsInPage = pageParaMap.get(page.getPageId());
 					HashMap<String, String> paraIDTextMap = new HashMap<String, String>();
 					for(String paraID:paraIDsInPage) {
 						String paraText = is.doc(is.search(qp.parse(paraID), 1).scoreDocs[0].doc).get("parabody");
