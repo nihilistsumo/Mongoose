@@ -19,7 +19,7 @@ import cc.mallet.types.InstanceList;
 import edu.unh.cs.treccar_v2.Data;
 import edu.unh.cs.treccar_v2.read_data.DeserializeData;
 
-public class ArticleTopicModel {
+public class ArticleTopicModelTrainer {
 	
 	/*
 	private final static int NUM_TOPICS = 100;

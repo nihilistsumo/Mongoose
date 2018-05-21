@@ -52,6 +52,7 @@ import edu.unh.cs.treccar.proj.prmat.PageRankClusters;
 import edu.unh.cs.treccar.proj.qe.Query;
 import edu.unh.cs.treccar.proj.qe.QueryIndex;
 import edu.unh.cs.treccar.proj.rank.LuceneIndexer;
+import edu.unh.cs.treccar.proj.rank.LuceneRankerForPage;
 import edu.unh.cs.treccar.proj.rank.LuceneRankerForSection;
 import edu.unh.cs.treccar.proj.similarities.HerstStOngeSimilarity;
 import edu.unh.cs.treccar.proj.similarities.JiangConrathSimilarity;
@@ -105,6 +106,17 @@ public class MongooseHelper {
 		try {
 			LuceneRankerForSection lrs = new LuceneRankerForSection();
 			lrs.rank(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+outlineFile, outputRunfile, level, method, retNo);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void rankForPage(Properties prop, String outputRunfile, String method, int retNo, String outlineFile) {
+		//Arguments: String indexDirPath, String outlinePath, String outRunPath, String level, String method, int retNo
+		try {
+			LuceneRankerForPage lrp = new LuceneRankerForPage();
+			lrp.rank(prop.getProperty("index-dir"), prop.getProperty("data-dir")+"/"+outlineFile, outputRunfile, method, retNo);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

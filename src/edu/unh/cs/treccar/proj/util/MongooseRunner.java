@@ -16,7 +16,8 @@ import edu.unh.cs.treccar.proj.qe.QueryIndex;
 import edu.unh.cs.treccar.proj.rank.LuceneRanker;
 import edu.unh.cs.treccar.proj.rlib.RLibFileWriterForCluster;
 import edu.unh.cs.treccar.proj.sum.SummaryMapper;
-import edu.unh.cs.treccar.proj.tm.ArticleTopicModel;
+import edu.unh.cs.treccar.proj.tm.ArticleTopicModelReranker;
+import edu.unh.cs.treccar.proj.tm.ArticleTopicModelTrainer;
 import edu.unh.cs.treccar.proj.tm.TopicModelMapper;
 
 public class MongooseRunner {
@@ -50,6 +51,15 @@ public class MongooseRunner {
 				mh.rank(prop, outputRunfilePath, level, method, retNo, outline);
 			}
 			
+			// -rpage outline-file output-runfile bm25/bool/classic/lmds 200
+			else if(args[0].equalsIgnoreCase("-rpage")) {
+				String outline = args[1];
+				String outputRunfilePath = args[2];
+				String method = args[3];
+				int retNo = Integer.parseInt(args[4]);
+				mh.rankForPage(prop, outputRunfilePath, method, retNo, outline);
+			}
+			
 			// -tmpage paragraph-cbor-path path-for-tm-model path-for-tm-report numTopics alphaSum beta numThreads iter
 			else if(args[0].equalsIgnoreCase("-tmpage")) {
 				String paraCborPath = args[1];
@@ -60,8 +70,19 @@ public class MongooseRunner {
 				double beta = Double.parseDouble(args[6]);
 				int numThreads = Integer.parseInt(args[7]);
 				int iter = Integer.parseInt(args[8]);
-				ArticleTopicModel atm = new ArticleTopicModel();
+				ArticleTopicModelTrainer atm = new ArticleTopicModelTrainer();
 				atm.trainModel(paraCborPath, tmModelPath, tmReportPath, numTopics, alphaSum, beta, numThreads, iter);
+			}
+			
+			// -tmprrnk tm-path cand-set-runfile-path outline-path out-runfile-path parallel>0
+			else if(args[0].equalsIgnoreCase("-tmprrnk")) {
+				String topicModelPath = args[1];
+				String candSetPath = args[2];
+				String outlinePath = args[3];
+				String outRunFilePath = args[4];
+				int parallel = Integer.parseInt(args[5]);
+				ArticleTopicModelReranker atmrrnk = new ArticleTopicModelReranker();
+				atmrrnk.rerank(prop, topicModelPath, candSetPath, outlinePath, outRunFilePath, parallel);
 			}
 			
 			//To process similarity data between para pair
