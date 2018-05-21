@@ -59,13 +59,13 @@ public class ArticleTopicModelReranker {
 						paraIDTextMap.put(paraID, paraText);
 					}
 					InstanceList paraIList = this.convertParasToIList(paraIDTextMap);
-					Instance secIns = this.getPageQueryInstance(page.getPageId(), secIDsinPage);
+					Instance secIns = this.getPageQueryInstance(page.getPageId(), secIDsinPage).get(0);
 					double[] secTopicDist = inf.getSampledDistribution(secIns, ITERATIONS_INFERENCER, THINNING_INFERENCER, BURNIN_INFERENCER);
 					for(Instance paraIns:paraIList) {
 						double[] paraTopicDist = inf.getSampledDistribution(paraIns, ITERATIONS_INFERENCER, THINNING_INFERENCER, BURNIN_INFERENCER);
-						bw.write(page.getPageId()+" Q0 "+paraIns.getName()+" 0 "+this.getKLdiv(secTopicDist, paraTopicDist)+"TMPAGE-RERANK\n");
+						bw.write(page.getPageId()+" Q0 "+paraIns.getName()+" 0 "+this.getKLdiv(secTopicDist, paraTopicDist)+" TMPAGE-RERANK\n");
 					}
-					System.out.println(page+" done");
+					System.out.println(page.getPageId()+" done");
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -89,13 +89,15 @@ public class ArticleTopicModelReranker {
 		}
 	}
 	
-	private Instance getPageQueryInstance(String pageID, HashSet<String> secIDs) {
+	private InstanceList getPageQueryInstance(String pageID, HashSet<String> secIDs) {
 		String queryString = pageID;
 		for(String s:secIDs)
 			queryString+=" "+s;
 		queryString = queryString.replaceAll("[/,%20]", " ").replaceAll("enwiki:", "");
 		Instance qIns = new Instance(queryString, null, pageID, queryString);
-		return qIns;
+		InstanceList iListPageQ = new InstanceList(TopicModelMapper.buildPipeForLDA());
+		iListPageQ.addThruPipe(qIns);
+		return iListPageQ;
 	}
 	
 	private InstanceList convertParasToIList(HashMap<String, String> paraTexts) {
