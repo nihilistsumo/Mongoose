@@ -40,7 +40,7 @@ public class ArticleTopicModelReranker {
 			FileInputStream fis = new FileInputStream(new File(outlinePath));
 			final Iterator<Data.Page> pageIt = DeserializeData.iterAnnotations(fis); 
 			Iterable<Data.Page> pageIterable = ()->pageIt;
-			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapFromRunfile(candSetFilePath);
+			HashMap<String, ArrayList<String>> pageParaMap = DataUtilities.getPageParaMapWithScoresFromRunfile(candSetFilePath);
 			BufferedWriter bw = new BufferedWriter(new FileWriter(new File(runfileOutPath)));
 			IndexSearcher is = new IndexSearcher(DirectoryReader.open(FSDirectory.open((new File(prop.getProperty("index-dir")).toPath()))));
 			Analyzer analyzer = new StandardAnalyzer();
@@ -52,18 +52,21 @@ public class ArticleTopicModelReranker {
 					HashSet<String> secIDsinPage = new HashSet<String>();
 					secIDsinPage = this.getAllSectionIDs(page);
 					QueryParser qp = new QueryParser("paraid", analyzer);
-					ArrayList<String> paraIDsInPage = pageParaMap.get(page.getPageId());
+					ArrayList<String> paraDataInPage = pageParaMap.get(page.getPageId());
 					HashMap<String, String> paraIDTextMap = new HashMap<String, String>();
-					for(String paraID:paraIDsInPage) {
-						String paraText = is.doc(is.search(qp.parse(paraID), 1).scoreDocs[0].doc).get("parabody");
-						paraIDTextMap.put(paraID, paraText);
+					HashMap<String, Double> paraIDScoreMap = new HashMap<String, Double>();
+					for(String paraData:paraDataInPage) {
+						String paraText = is.doc(is.search(qp.parse(paraData.split(" ")[0]), 1).scoreDocs[0].doc).get("parabody");
+						paraIDTextMap.put(paraData.split(" ")[0], paraText);
+						paraIDScoreMap.put(paraData.split(" ")[0], Double.parseDouble(paraData.split(" ")[1]));
 					}
 					InstanceList paraIList = this.convertParasToIList(paraIDTextMap);
 					Instance secIns = this.getPageQueryInstance(page.getPageId(), secIDsinPage).get(0);
 					double[] secTopicDist = inf.getSampledDistribution(secIns, ITERATIONS_INFERENCER, THINNING_INFERENCER, BURNIN_INFERENCER);
 					for(Instance paraIns:paraIList) {
 						double[] paraTopicDist = inf.getSampledDistribution(paraIns, ITERATIONS_INFERENCER, THINNING_INFERENCER, BURNIN_INFERENCER);
-						bw.write(page.getPageId()+" Q0 "+paraIns.getName()+" 0 "+this.getKLdiv(secTopicDist, paraTopicDist)+" TMPAGE-RERANK\n");
+						double score = this.getKLdiv(secTopicDist, paraTopicDist)*paraIDScoreMap.get(paraIns.getName());
+						bw.write(page.getPageId()+" Q0 "+paraIns.getName()+" 0 "+score+" TMPAGE-RERANK\n");
 					}
 					System.out.println(page.getPageId()+" done");
 				} catch (Exception e) {
