@@ -66,7 +66,7 @@ done
 
 for leave in {0..4}
 do
-	mkdir tmp-runs$leave
+	mkdir $cvdir/tmp-runs$leave
 	cp $cvdir/runs/fold$leave-*-run $cvdir/tmp-runs$leave
 	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/tmp-runs$leave $cvdir/models/fold$leave-rlib-model $cvdir/comb-runs/fold-$leave-comb-run
 	rm -r $cvdir/tmp-runs$leave
