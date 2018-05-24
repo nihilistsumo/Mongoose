@@ -16,10 +16,10 @@ import java.util.Properties;
 
 public class CombineRunFilesUsingRlibModel {
 	
-	public static final int RET_PARA_NO_IN_COMBINED = 200; 
+	//public static final int RET_PARA_NO_IN_COMBINED = 200; 
 	
 	//Arguments: Properties, folder path to run files, filepath to rlib model, filepath to output runfile
-	public void writeRunFile(Properties p, String runfilesDir, String rlibModelPath, String combinedRunfilePath) throws IOException{
+	public void writeRunFile(Properties p, String runfilesDir, String rlibModelPath, String combinedRunfilePath, int retParaInComb) throws IOException{
 		//String[] runfiles = p.getProperty("runfile-list").split(" ");
 		File folderOfRunfiles = new File(runfilesDir);
 		File[] runfiles = folderOfRunfiles.listFiles();
@@ -72,7 +72,7 @@ public class CombineRunFilesUsingRlibModel {
 				paraScores.put(para, combinedScore);
 				//bw.write(q+" Q0 "+para+" 0 "+combinedScore+" COMBINED\n");
 			}
-			combinedRunfile.put(q, (HashMap<String, Double>)MapUtil.sortByValue(paraScores, RET_PARA_NO_IN_COMBINED));
+			combinedRunfile.put(q, (HashMap<String, Double>)MapUtil.sortByValue(paraScores, retParaInComb));
 		}
 		for(String q:combinedRunfile.keySet()) {
 			for(String para:combinedRunfile.get(q).keySet())
@@ -111,7 +111,7 @@ public class CombineRunFilesUsingRlibModel {
 			Properties p = new Properties();
 			p.load(new FileInputStream(new File("project.properties")));
 			CombineRunFilesUsingRlibModel comb = new CombineRunFilesUsingRlibModel();
-			comb.writeRunFile(p, args[0], args[1], args[2]);
+			comb.writeRunFile(p, args[0], args[1], args[2], Integer.parseInt(args[3]));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
