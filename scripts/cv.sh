@@ -8,7 +8,6 @@ jardir=/home/sumanta/git/Mongoose/target
 #jardir=/home/sk1105/sumanta/mongoose-cv/Mongoose/target
 rlib=~/Softwares
 #rlib=/home/sk1105/sumanta
-level=hierarchical
 
 # Generating run files
 
