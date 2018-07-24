@@ -21,7 +21,7 @@ echo "Generating run files"
 # paragraph with paragraph.lucene index
 type=paragraph
 level=page
-for queryleval in title all
+for querylevel in title all
 do
 	for retmodel in bm25 ql
 	do
@@ -39,7 +39,7 @@ do
 	done
 done
 level=section
-for queryleval in sectionPath all subtree title leafheading interior
+for querylevel in sectionPath all subtree title leafheading interior
 do
 	for retmodel in bm25 ql
 	do
@@ -61,7 +61,7 @@ done
 # page with page.lucene index
 type=page
 level=page
-for queryleval in title all
+for querylevel in title all
 do
 	for retmodel in bm25 ql
 	do
@@ -79,7 +79,7 @@ do
 	done
 done
 level=section
-for queryleval in sectionPath all subtree title leafheading interior
+for querylevel in sectionPath all subtree title leafheading interior
 do
 	for retmodel in bm25 ql
 	do
@@ -101,7 +101,7 @@ done
 # entity with entity.lucene index
 type=entity
 level=page
-for queryleval in title all
+for querylevel in title all
 do
 	for retmodel in bm25 ql
 	do
@@ -119,7 +119,7 @@ do
 	done
 done
 level=section
-for queryleval in sectionPath all subtree title leafheading interior
+for querylevel in sectionPath all subtree title leafheading interior
 do
 	for retmodel in bm25 ql
 	do
