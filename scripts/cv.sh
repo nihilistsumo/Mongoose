@@ -11,7 +11,7 @@ jardir=/home/sumanta/git/Mongoose/target
 #jardir=/home/sk1105/sumanta/trec-methods/Mongoose/target
 jarfile=trec-car-methods-0.9-jar-with-dependencies.jar
 class=edu.unh.cs.lucene.TrecCarLuceneQuery
-level=hierarchical
+qrelslevel=hierarchical
 
 #indexes
 paraindex=../paragraph-corpus-paragraph-index
@@ -52,7 +52,7 @@ do
 	do
 		if [ ! $f -eq $leavefold ]
 		then
-			cat $trecdir/fold-$f-train.pages.cbor-$level.qrels >> $cvdir/qrels/leave$leavefold.qrels
+			cat $trecdir/fold-$f-train.pages.cbor-$qrelslevel.qrels >> $cvdir/qrels/leave$leavefold.qrels
 		fi
 	done
 	
@@ -87,7 +87,7 @@ done
 
 # Ranklib	
 
-for fold in {0..4}
+for leavefold in {0..4}
 do
 	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb $cvdir/runs/tmp-leave$leavefold $cvdir/runs/tmp-leave$leavefold/fet-file $cvdir/qrels/leave$leavefold.qrels
 	java -jar $rlib/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$leavefold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$leavefold-rlib-model
