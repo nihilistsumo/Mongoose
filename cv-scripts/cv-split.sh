@@ -46,8 +46,9 @@ do
 		do
 			for expmodel in none rm
 			do
-				cat $cvdir/runs/tmp-leave$leavefold/*-$type-$level-$querylevel-$retmodel-$expmodel-std-run >> $cvdir/runs/tmp-leave$leavefold/comb-$type-$level-$querylevel-$retmodel-$expmodel-$analyzer-run
+				cat $cvdir/runs/tmp-leave$leavefold/*-$type-$level-$querylevel-$retmodel-$expmodel-std-run >> $cvdir/runs/tmp-leave$leavefold/comb-$type-$level-$querylevel-$retmodel-$expmodel-std-run
 			done
 		done
 	done
+	rm $cvdir/runs/tmp-leave$leavefold/fold-*-run
 done
