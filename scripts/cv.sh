@@ -47,7 +47,7 @@ for leavefold in {0..4}
 do
 	mkdir $cvdir/runs/tmp-leave$leavefold
 	cp $cvdir/runs/*-run $cvdir/runs/tmp-leave$leavefold/
-	rm $cvdir/runs/tmp-leave$leavefold/fold$leavefold-*-run
+	rm $cvdir/runs/tmp-leave$leavefold/fold-$leavefold-*-run
 	for f in {0..4}
 	do
 		if [ ! $f -eq $leavefold ]
@@ -66,13 +66,7 @@ do
 			do
 				for analyzer in std english
 				do
-					for includefold in {0..4}
-					do
-						if [ ! $includefold -eq $leavefold ]
-						then
-							cat $cvdir/runs/tmp-leave$leavefold/fold-$includefold-$type-$level-$querylevel-$retmodel-$expmodel-$analyzer-run >> $cvdir/runs/tmp-leave$leavefold/comb-$type-$level-$querylevel-$retmodel-$expmodel-$analyzer-run
-						fi
-					done
+					cat $cvdir/runs/tmp-leave$leavefold/*-$type-$level-$querylevel-$retmodel-$expmodel-$analyzer-run >> $cvdir/runs/tmp-leave$leavefold/comb-$type-$level-$querylevel-$retmodel-$expmodel-$analyzer-run
 				done
 			done
 		done
