@@ -16,6 +16,6 @@ qrelslevel=hierarchical
 # Ranklib	
 leavefold=$1
 
-java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb $cvdir/runs/tmp-leave$leavefold $cvdir/runs/tmp-leave$leavefold/fet-file $cvdir/qrels/leave$leavefold.qrels
-java -jar $rlib/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$leavefold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$leavefold-rlib-model
+java -Xmx50g -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmb $cvdir/runs/tmp-leave$leavefold $cvdir/runs/tmp-leave$leavefold/fet-file $cvdir/qrels/leave$leavefold.qrels
+java -Xmx50g -jar $rlib/RankLib-2.1-patched.jar -train $cvdir/runs/tmp-leave$leavefold/fet-file -ranker 4 -metric2t MAP -save $cvdir/models/fold$leavefold-rlib-model
 rm $cvdir/runs/tmp-leave$leavefold/fet-file

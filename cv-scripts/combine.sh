@@ -19,13 +19,13 @@ for leave in {0..4}
 do
 	mkdir $cvdir/tmp-runs$leave
 	cp $cvdir/runs/fold$leave-*-run $cvdir/tmp-runs$leave
-	java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/tmp-runs$leave $cvdir/models/fold$leave-rlib-model $cvdir/comb-runs/fold-$leave-comb-run
+	java -Xmx50g -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmbrun $cvdir/tmp-runs$leave $cvdir/models/fold$leave-rlib-model $cvdir/comb-runs/fold-$leave-comb-run
 	rm -r $cvdir/tmp-runs$leave
 done
 
 cat $cvdir/comb-runs/* >> $cvdir/comb-runs/cv-comb-run
 rm $cvdir/comb-runs/fold*-run
 
-java -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmboptw $cvdir/models
+java -Xmx50g -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmboptw $cvdir/models
 
 echo "Cross validation complete"
