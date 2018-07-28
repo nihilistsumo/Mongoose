@@ -26,6 +26,6 @@ done
 cat $cvdir/comb-runs/* >> $cvdir/comb-runs/cv-comb-run
 rm $cvdir/comb-runs/fold*-run
 
-java -Xmx50g -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmboptw $cvdir/models
+#java -Xmx50g -jar $jardir/Mongoose-0.0.1-SNAPSHOT-jar-with-dependencies.jar -cmboptw $cvdir/models
 
 echo "Cross validation complete"
